@@ -47,7 +47,7 @@ OPENAI_API_KEY=sk-proj-xxx...
 ### Bước 2 — Cài thư viện
 
 ```bat
-pip install -r backend\requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Bước 3 — Chạy server
@@ -57,7 +57,7 @@ pip install -r backend\requirements.txt
 **Hoặc chạy thủ công:**
 
 ```bat
-cd backend
+cd src
 python main.py
 ```
 
@@ -131,17 +131,19 @@ Sẽ nhận được URL dạng `https://random-name.trycloudflare.com` — chia
 ```
 codebase/
 ├── myvinpearl-ai-chatbot.html   ← Frontend (React + Tailwind, load qua CDN)
-├── backend/
-│   ├── main.py                  ← FastAPI server, SSE endpoint
-│   ├── mock_db.py               ← Dữ liệu mẫu (5 điểm đến, phòng, booking)
-│   ├── scoring.py               ← Thuật toán gợi ý phòng
-│   ├── policy.py                ← Logic tính hoàn tiền
-│   └── agent/
-│       ├── graph.py             ← LangGraph state machine
-│       ├── nodes.py             ← Các node: classify, search, change, cancel
-│       ├── prompts.py           ← System prompts
-│       ├── schemas.py           ← Data models
-│       └── stream.py            ← SSE event formatting
+├── requirements.txt             ← Python dependencies
+├── src/
+│   ├── main.py                  ← FastAPI server, SSE endpoint — entry point duy nhất
+│   ├── agent/
+│   │   └── graph.py             ← LangGraph ReAct agent (agent ⇄ tools loop)
+│   ├── core/
+│   │   ├── llm.py               ← LLM factory (get_llm / get_smart_llm)
+│   │   └── schemas.py           ← Data models
+│   └── utils/
+│       ├── mock_db.py           ← Dữ liệu mẫu (5 điểm đến, phòng, booking)
+│       ├── scoring.py           ← Thuật toán gợi ý phòng
+│       ├── data_store.py        ← Business logic API (wraps mock_db + scoring)
+│       └── policy.py            ← Load chính sách đổi/hủy từ data/POLICY.md
 ├── data/
 │   ├── hotels.json              ← Danh sách resort
 │   └── POLICY.md                ← Chính sách đổi/hủy
