@@ -1,103 +1,162 @@
-# Batch 02 · Day 06 — AI Product Hackathon
+# MyVinpearl AI Booking Assistant
 
-> SPEC → Prototype → Demo. Hôm nay không có bài giảng mới — hôm nay chứng minh: SPEC là giả thuyết, prototype là bằng chứng, demo là thuyết phục.
+Chatbot AI hỗ trợ đặt phòng, đổi/hủy và tra cứu chính sách hoàn tiền cho hệ thống Vinpearl — xây dựng trong hackathon Day 06.
 
 ---
 
-## Cách nộp bài
+## Thành viên nhóm
 
-**Đại diện nhóm tạo MỘT repo nhóm**, đặt tên:
+| Mã học viên | Họ và tên | Vai trò chính |
+|-------------|-----------|---------------|
+| 2A202600957 | Nguyễn Mai Hồng Trâm | Backend · AI Agent · Prompt engineering |
+| 2A202600618 | Ngô Thị Ngọc Ánh | Frontend · Giao diện chatbot |
+| 2A202600842 | Nguyễn Ngọc Anh | Testing · Kịch bản demo · SPEC |
+
+---
+
+## Phân công công việc
+
+| Thành viên | Phụ trách | Chi tiết |
+|------------|-----------|----------|
+| Nguyễn Mai Hồng Trâm - 2A202600957 | Backend + Prompt | Xây dựng LangGraph agent (`backend/agent/`), viết và kiểm thử toàn bộ system prompt (`prompts.py`), định nghĩa policy hoàn tiền (`policy.py`, `data/POLICY.md`), dựng mock database (`mock_db.py`) |
+| Ngô Thị Ngọc Ánh - 2A202600618 | Frontend | Xây dựng giao diện chatbot (`myvinpearl-ai-chatbot.html`), thiết kế luồng SSE streaming hiển thị thinking steps, tích hợp UI với backend API |
+| Nguyễn Ngọc Anh - 2A202600842 | Testing + Demo | Viết test cases (`tests/`), kiểm thử failure path và correction path, soạn kịch bản demo (happy case + error case), quản lý repo và nộp bài |
+
+---
+
+## Cách chạy prototype
+
+### Yêu cầu
+
+- Python 3.10 trở lên
+- OpenAI API key — lấy tại [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+### Bước 1 — Cài đặt
+
+```bat
+cd codebase
+copy .env.example .env
+```
+
+Mở file `.env` vừa tạo và điền API key:
+
+```ini
+OPENAI_API_KEY=sk-proj-xxx...
+```
+
+### Bước 2 — Cài thư viện
+
+```bat
+pip install -r backend\requirements.txt
+```
+
+### Bước 3 — Chạy server
+
+**Cách nhanh (Windows):** double-click `start.bat`
+
+**Hoặc chạy thủ công:**
+
+```bat
+cd backend
+python main.py
+```
+
+Server khởi động tại **http://localhost:8000** — mở trình duyệt và vào địa chỉ này để dùng chatbot.
+
+### Biến môi trường
+
+| Biến | Bắt buộc | Mặc định | Mô tả |
+|------|----------|----------|-------|
+| `OPENAI_API_KEY` | Có | — | OpenAI API key, bắt đầu bằng `sk-proj-` |
+| `OPENAI_MODEL_FAST` | Không | `gpt-4o-mini` | Model dùng cho intent classification |
+| `OPENAI_MODEL_SMART` | Không | `gpt-4o-mini` | Model dùng cho giải thích policy |
+| `PORT` | Không | `8000` | Cổng server |
+| `HOST` | Không | `0.0.0.0` | Host server |
+
+### Chạy tests
+
+```bat
+cd codebase
+pytest tests/
+```
+
+### Chia sẻ qua Cloudflare Tunnel (không cần server)
+
+Sau khi backend đang chạy tại localhost:8000:
+
+```bat
+cloudflared tunnel --url http://localhost:8000
+```
+
+Sẽ nhận được URL dạng `https://random-name.trycloudflare.com` — chia sẻ link này cho người khác truy cập trực tiếp.
+
+---
+
+## Công cụ và API sử dụng
+
+### AI / Model
+
+| Công cụ | Mục đích |
+|---------|----------|
+| **OpenAI GPT-4o-mini** | Model AI chính — phân loại intent, trích xuất thông tin, giải thích chính sách hoàn tiền |
+| **LangGraph** | Orchestration AI agent theo state machine (classify → route → search/change/cancel) |
+| **LangChain** | Tích hợp OpenAI, structured output, message formatting |
+
+### Backend
+
+| Công cụ | Mục đích |
+|---------|----------|
+| **FastAPI** | Web framework, REST API, SSE streaming |
+| **Pydantic** | Validation dữ liệu, structured output schema |
+| **python-dotenv** | Quản lý biến môi trường |
+
+### Frontend
+
+| Công cụ | Mục đích |
+|---------|----------|
+| **React 18** (CDN) | UI library — không cần build step |
+| **Tailwind CSS** (CDN) | Styling, responsive design |
+| **Server-Sent Events (SSE)** | Streaming thinking steps và kết quả theo thời gian thực |
+
+### Triển khai
+
+| Công cụ | Mục đích |
+|---------|----------|
+| **Cloudflare Tunnel** | Tạo public URL tức thì để share demo, không cần deploy server |
+
+---
+
+## Cấu trúc project
 
 ```
-Day06-Lop-NhomXX
+codebase/
+├── myvinpearl-ai-chatbot.html   ← Frontend (React + Tailwind, load qua CDN)
+├── backend/
+│   ├── main.py                  ← FastAPI server, SSE endpoint
+│   ├── mock_db.py               ← Dữ liệu mẫu (5 điểm đến, phòng, booking)
+│   ├── scoring.py               ← Thuật toán gợi ý phòng
+│   ├── policy.py                ← Logic tính hoàn tiền
+│   └── agent/
+│       ├── graph.py             ← LangGraph state machine
+│       ├── nodes.py             ← Các node: classify, search, change, cancel
+│       ├── prompts.py           ← System prompts
+│       ├── schemas.py           ← Data models
+│       └── stream.py            ← SSE event formatting
+├── data/
+│   ├── hotels.json              ← Danh sách resort
+│   └── POLICY.md                ← Chính sách đổi/hủy
+├── tests/                       ← Unit tests + test cases
+├── .env.example                 ← Template biến môi trường
+└── start.bat                    ← Script khởi động Windows
 ```
 
-Ví dụ: `Day06-C401-Nhom03`
-
-- **README của repo nhóm phải liệt kê đủ thành viên** — mỗi người gồm **mã học viên + họ và tên**.
-- Đại diện nhóm nộp **link repo** lên LMS. **Hạn nộp: 23:59 ngày 04/06/2026.**
-- README cũng cần **ghi rõ phân công công việc** — ai trong nhóm phụ trách phần nào (SPEC, prototype, giao diện, kịch bản demo…).
-
-### Cấu trúc repo nhóm
-
-```
-Day06-Lop-NhomXX/
-├── README.md        ← Thành viên (mã HV + họ tên) + phân công công việc + mô tả ngắn sản phẩm
-├── spec/            ← SPEC sản phẩm (xem hướng dẫn trong spec/)
-└── codebase/        ← Toàn bộ code prototype (xem hướng dẫn trong codebase/)
-```
-
 ---
 
-## Lịch ngày 06 — 04/06/2026
+## Xử lý sự cố
 
-| Giờ | Mốc | Cần đạt |
-|-----|-----|---------|
-| Sáng | Build | Bắt đầu từ SPEC nhẹ đã làm ở Day 5 |
-| **11:00** | Checkpoint 1 | **Show được ít nhất mockup/prototype chạy được** |
-| **13:00** | Checkpoint 2 | **Lắp được AI vào ít nhất 1 flow** |
-| **15:30** | Checkpoint 3 | **Chuẩn bị xong tài liệu demo + slide** |
-| **16:00** | Demo round | Trình bày trong zone, 10 phút/nhóm |
-
----
-
-## Tracks
-
-Mỗi nhóm chọn một lĩnh vực, lấy một app thật trong đó để soi và cải tiến:
-
-| Track | App thật gợi ý |
-|-------|----------------|
-| **Learning OS** (Vin AI Thực Chiến) | LMS khóa học, Discord lớp |
-| **Travel & Hospitality** | Vinpearl, Sun World / SunGroup |
-| **Food & Local Delivery** | ShopeeFood, GrabFood, BeFood, Xanh SM Ngon |
-| **Personal Finance** | MoMo, ZaloPay, app ngân hàng |
-| **Healthcare** | Vinmec, Long Châu, Pharmacity |
-
-> Các nhóm **cùng track** ngồi **cùng một zone** khi demo.
-
----
-
-## Kỳ vọng mỗi demo
-
-1. **Product Canvas** — giới thiệu ý tưởng và nỗi đau (painpoint) của người dùng.
-2. **Demo full luồng end-to-end** — show cả happy case lẫn error case.
-3. **AI chạy thật trong ít nhất 1 flow** — không chỉ mockup tĩnh.
-
----
-
-## Demo round (16:00)
-
-- Mỗi nhóm **10 phút** (≈ 5 phút trình bày + 5 phút Q&A).
-- Các nhóm khác **phản biện, đặt câu hỏi**.
-- **Đánh giá chéo qua form**: thành viên các nhóm khác chấm điểm.
-- **Tổng kết**: nhóm điểm cao nhất mỗi zone được **bonus**; còn thời gian thì các nhóm điểm cao **present trước cả lớp**; giảng viên đánh giá.
-
-Chi tiết luật chơi + cách chấm: [`hackathon-rules.md`](hackathon-rules.md)
-
----
-
-## Chấm điểm (Day 5 + Day 6 = 100 điểm)
-
-| Hạng mục | Điểm |
-|----------|------|
-| SPEC | 25 |
-| Prototype | 15 |
-| Demo Day | 25 |
-| Bài tập UX (Day 5) | 10 |
-| Phản ánh cá nhân (reflection) | 25 |
-
-**Điều kiện chặn:** prototype không có lời gọi AI thật → giới hạn 4/10 · không giải thích được phần mình khi bị hỏi → 0 điểm demo cá nhân.
-
----
-
-## Tài liệu trong repo này
-
-| Folder / file | Nội dung |
-|---------------|----------|
-| [`hackathon-rules.md`](hackathon-rules.md) | Luật chơi, lịch, demo round, cách chấm |
-| [`spec/`](spec/) | Hướng dẫn viết SPEC sản phẩm (nối tiếp SPEC nhẹ Day 5) |
-| [`codebase/`](codebase/) | Yêu cầu nộp code prototype |
-
----
-
-*Batch 02 · Ngày 06 — VinUni A20 · AI Thực Chiến · 2026*
+| Lỗi | Cách sửa |
+|-----|----------|
+| `OPENAI_API_KEY chưa được đặt` | Kiểm tra file `.env` có key đúng định dạng `sk-proj-...` |
+| `ModuleNotFoundError` | Chạy lại `pip install -r backend\requirements.txt` |
+| `Port 8000 already in use` | Đổi `PORT=8001` trong `.env` hoặc tắt tiến trình đang dùng port 8000 |
+| `Connection refused` (tunnel) | Đảm bảo backend đang chạy trước khi mở tunnel |

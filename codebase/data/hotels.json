@@ -1,0 +1,699 @@
+{
+  "hotels": [
+    {
+      "id": "vpww",
+      "destination_id": "pq",
+      "destination_name": "Phú Quốc",
+      "name": "Vinpearl Wonderworld Phú Quốc",
+      "location": "Bãi Dài, đảo Phú Quốc, tỉnh Kiên Giang, Việt Nam",
+      "rating": 4.9,
+      "reviews": "3.1K",
+      "price": 6954000,
+      "star": 5,
+      "max_guests": 10,
+      "attributes": ["beach", "family", "pool", "theme_park", "entertainment"],
+      "amenities": ["Theme Park", "Hồ bơi vô cực", "Beach Club", "Spa", "Kids Club", "Nhà hàng 5 sao"],
+      "image": "https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vpww",
+          "name": "Phòng Deluxe Hướng Biển",
+          "capacity": 2,
+          "price": 4500000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "☕ Minibar", "🛁 Bathtub"]
+        },
+        {
+          "id": "fs_vpww",
+          "name": "Biệt Thự 2 Phòng Ngủ",
+          "capacity": 4,
+          "price": 6954000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "pool_view", "private_pool"],
+          "amenities": ["🏊 Private Pool", "🍳 Full Kitchen", "📺 Smart TV", "🛁 Bathtub"]
+        },
+        {
+          "id": "villa3_vpww",
+          "name": "Biệt Thự 3 Phòng Ngủ",
+          "capacity": 6,
+          "price": 8635500,
+          "img_count": 19,
+          "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "beach_access"],
+          "amenities": ["🏊 Private Pool", "🍳 Full Kitchen", "🏖 Beach Access", "🚗 Golf Cart", "👶 Kids Room"]
+        },
+        {
+          "id": "villa4_vpww",
+          "name": "Biệt Thự 4 Phòng Ngủ Premium",
+          "capacity": 8,
+          "price": 12000000,
+          "img_count": 22,
+          "image": "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "beach_access", "premium"],
+          "amenities": ["🏊 Private Pool lớn", "🍳 Full Kitchen", "🏖 Beach Access", "🚗 Golf Cart x2", "🧖 Spa riêng", "🍽 Butler Service"]
+        }
+      ]
+    },
+    {
+      "id": "vprs_pq",
+      "destination_id": "pq",
+      "destination_name": "Phú Quốc",
+      "name": "Vinpearl Resort & Spa Phú Quốc",
+      "location": "Bãi Dài, Gành Dầu, Phú Quốc, Kiên Giang, Việt Nam",
+      "rating": 4.7,
+      "reviews": "4.5K",
+      "price": 4200000,
+      "star": 5,
+      "max_guests": 6,
+      "attributes": ["beach", "couple", "spa", "pool"],
+      "amenities": ["Beachfront", "Spa cao cấp", "Hồ bơi vô cực", "Nhà hàng hải sản", "Water Sports"],
+      "image": "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=700&q=80",
+      "rooms": [
+        {
+          "id": "sup_vprs_pq",
+          "name": "Superior Garden View",
+          "capacity": 2,
+          "price": 3200000,
+          "img_count": 7,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "garden_view"],
+          "amenities": ["🌿 Garden View", "📺 Smart TV", "☕ Coffee Machine"]
+        },
+        {
+          "id": "ocean_vprs_pq",
+          "name": "Ocean View Suite",
+          "capacity": 2,
+          "price": 4200000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view"],
+          "amenities": ["🌊 Ocean View", "📺 Smart TV", "☕ Minibar", "🛁 Jacuzzi"]
+        },
+        {
+          "id": "villa_vprs_pq",
+          "name": "Beach Front Villa",
+          "capacity": 4,
+          "price": 6100000,
+          "img_count": 12,
+          "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+          "attributes": ["family", "villa", "beach_access"],
+          "amenities": ["🏖 Beachfront", "🍳 Kitchenette", "🛁 Bathtub", "📺 Smart TV"]
+        }
+      ]
+    },
+    {
+      "id": "vhf_pq",
+      "destination_id": "pq",
+      "destination_name": "Phú Quốc",
+      "name": "VinHolidays Fiesta Phú Quốc",
+      "location": "Bãi Dài, Phú Quốc, Kiên Giang, Việt Nam",
+      "rating": 4.5,
+      "reviews": "2.2K",
+      "price": 3100000,
+      "star": 4,
+      "max_guests": 6,
+      "attributes": ["beach", "family", "pool", "budget_friendly"],
+      "amenities": ["Hồ bơi ngoài trời", "Bãi biển riêng", "Nhà hàng", "Gym", "Kids Area"],
+      "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&q=80",
+      "rooms": [
+        {
+          "id": "std_vhf_pq",
+          "name": "Standard Room",
+          "capacity": 2,
+          "price": 2200000,
+          "img_count": 6,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "pool_view"],
+          "amenities": ["🏊 Pool View", "📺 Smart TV", "❄️ Air Conditioning"]
+        },
+        {
+          "id": "fam_vhf_pq",
+          "name": "Family Room",
+          "capacity": 4,
+          "price": 3100000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["family", "garden_view"],
+          "amenities": ["🌿 Garden View", "📺 Smart TV", "🛁 Bathtub", "👶 Extra Bed"]
+        },
+        {
+          "id": "suite_vhf_pq",
+          "name": "Junior Suite Gia Đình",
+          "capacity": 6,
+          "price": 4800000,
+          "img_count": 11,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV x2", "🍳 Kitchenette", "👶 Kids Bed x2"]
+        }
+      ]
+    },
+    {
+      "id": "vprs_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Vinpearl Resort & Spa Nha Trang Bay",
+      "location": "Đảo Hòn Tre, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.8,
+      "reviews": "2.8K",
+      "price": 5200000,
+      "star": 5,
+      "max_guests": 8,
+      "attributes": ["beach", "island", "spa", "pool", "family"],
+      "amenities": ["Đảo riêng", "Water Park", "Hồ bơi", "Spa 5 sao", "Cáp treo ra đảo", "Nhà hàng"],
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vprs_nt",
+          "name": "Phòng Deluxe Hướng Vịnh",
+          "capacity": 2,
+          "price": 3800000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view"],
+          "amenities": ["🌊 Bay View", "📺 Smart TV", "☕ Minibar", "🛁 Bathtub"]
+        },
+        {
+          "id": "fam_vprs_nt",
+          "name": "Family Suite Hướng Biển",
+          "capacity": 4,
+          "price": 5200000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "sea_view", "extra_bed"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "🛁 Bathtub", "👶 Extra Bed", "🍳 Kitchenette"]
+        },
+        {
+          "id": "villa_vprs_nt",
+          "name": "Pool Villa 3 Phòng Ngủ",
+          "capacity": 6,
+          "price": 9500000,
+          "img_count": 14,
+          "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool"],
+          "amenities": ["🏊 Private Pool", "🍳 Full Kitchen", "🌊 Sea View", "🚗 Buggy Transfer"]
+        }
+      ]
+    },
+    {
+      "id": "vpl_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Vinpearl Luxury Nha Trang",
+      "location": "Hòn Tre, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.9,
+      "reviews": "1.9K",
+      "price": 8900000,
+      "star": 5,
+      "max_guests": 8,
+      "attributes": ["luxury", "beach", "couple", "spa", "pool"],
+      "amenities": ["Private Beach", "Infinity Pool", "Spa & Wellness", "Fine Dining", "Yoga Pavilion", "Butler Service"],
+      "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+      "rooms": [
+        {
+          "id": "prem_vpl_nt",
+          "name": "Premier Room Hướng Biển",
+          "capacity": 2,
+          "price": 6500000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view", "luxury"],
+          "amenities": ["🌊 Ocean View", "🛁 Freestanding Bathtub", "📺 Smart TV", "☕ Nespresso"]
+        },
+        {
+          "id": "suite_vpl_nt",
+          "name": "Ocean Suite",
+          "capacity": 2,
+          "price": 8900000,
+          "img_count": 13,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "sea_view", "luxury", "butler"],
+          "amenities": ["🌊 Panoramic Ocean View", "🛁 Jacuzzi", "🍾 Welcome Champagne", "🧖 Spa Access", "🤵 Butler Service"]
+        },
+        {
+          "id": "villa2_vpl_nt",
+          "name": "Luxury Villa 2 Phòng Ngủ",
+          "capacity": 4,
+          "price": 14000000,
+          "img_count": 18,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "luxury"],
+          "amenities": ["🏊 Private Pool", "🍳 Full Kitchen", "🌊 Sea View", "🤵 Personal Butler", "🛁 Outdoor Bathtub"]
+        }
+      ]
+    },
+    {
+      "id": "vpr_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Vinpearl Resort Nha Trang",
+      "location": "Đảo Hòn Tre, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.5,
+      "reviews": "3.2K",
+      "price": 2500000,
+      "star": 4,
+      "max_guests": 6,
+      "attributes": ["beach", "island", "pool", "watersport", "family"],
+      "amenities": ["Đảo riêng", "Water Park", "Hồ bơi", "Lặn biển", "Nhà hàng hải sản"],
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80",
+      "rooms": [
+        {
+          "id": "std_vpr_nt",
+          "name": "Standard Room",
+          "capacity": 2,
+          "price": 1800000,
+          "img_count": 6,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "garden_view"],
+          "amenities": ["🌿 Garden View", "📺 Smart TV", "❄️ Air Conditioning", "☕ Tea & Coffee"]
+        },
+        {
+          "id": "fam_vpr_nt",
+          "name": "Family Room",
+          "capacity": 4,
+          "price": 2500000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["family", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "🛁 Bathtub", "👶 Extra Bed"]
+        },
+        {
+          "id": "suite_vpr_nt",
+          "name": "Junior Suite",
+          "capacity": 5,
+          "price": 3800000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "sea_view", "living_room"],
+          "amenities": ["🌊 Sea View", "🛋 Living Room", "📺 Smart TV x2", "🍳 Kitchenette"]
+        }
+      ]
+    },
+    {
+      "id": "vpbf_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Vinpearl Beachfront Nha Trang",
+      "location": "Trần Phú, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.6,
+      "reviews": "1.5K",
+      "price": 3800000,
+      "star": 5,
+      "max_guests": 4,
+      "attributes": ["beach", "beachfront", "couple", "city"],
+      "amenities": ["Bãi biển trực tiếp", "Rooftop Pool", "Spa", "Nhà hàng Seafood"],
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vpbf_nt",
+          "name": "Deluxe Sea View",
+          "capacity": 2,
+          "price": 3800000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view", "beachfront"],
+          "amenities": ["🌊 Direct Sea View", "🛁 Bathtub", "📺 Smart TV", "☕ Minibar"]
+        },
+        {
+          "id": "fam_vpbf_nt",
+          "name": "Family Connecting Room",
+          "capacity": 4,
+          "price": 5600000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["family", "sea_view", "connecting"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV x2", "🔗 Connecting Rooms", "👶 Extra Bed"]
+        }
+      ]
+    },
+    {
+      "id": "htr_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Hòn Tằm Resort",
+      "location": "Đảo Hòn Tằm, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.7,
+      "reviews": "1.2K",
+      "price": 4500000,
+      "star": 5,
+      "max_guests": 6,
+      "attributes": ["island", "beach", "nature", "couple", "eco"],
+      "amenities": ["Đảo thiên nhiên", "Bãi biển hoang sơ", "Lặn ngắm san hô", "Kayak", "Nhà hàng ngoài trời"],
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80",
+      "rooms": [
+        {
+          "id": "bung_htr_nt",
+          "name": "Garden Bungalow",
+          "capacity": 2,
+          "price": 3200000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&q=80",
+          "attributes": ["couple", "garden_view", "eco"],
+          "amenities": ["🌿 Garden Terrace", "📺 Smart TV", "❄️ Air Conditioning", "🐚 Island Vibes"]
+        },
+        {
+          "id": "vbung_htr_nt",
+          "name": "Beach Bungalow",
+          "capacity": 2,
+          "price": 4500000,
+          "img_count": 11,
+          "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80",
+          "attributes": ["couple", "beach_access"],
+          "amenities": ["🏖 Beachfront", "🌊 Sea View", "📺 Smart TV", "☕ Minibar"]
+        },
+        {
+          "id": "villa_htr_nt",
+          "name": "Family Villa",
+          "capacity": 5,
+          "price": 7200000,
+          "img_count": 14,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "villa", "beach_access"],
+          "amenities": ["🏖 Private Beach", "🍳 Kitchenette", "🌿 Garden", "👶 Kids Amenities"]
+        }
+      ]
+    },
+    {
+      "id": "vpe_nt",
+      "destination_id": "nt",
+      "destination_name": "Nha Trang",
+      "name": "Vinpearl Empire Nha Trang, Affiliated by Meliá",
+      "location": "72 Trần Phú, Nha Trang, Khánh Hòa, Việt Nam",
+      "rating": 4.8,
+      "reviews": "980",
+      "price": 6200000,
+      "star": 5,
+      "max_guests": 4,
+      "attributes": ["luxury", "city", "beach", "couple", "business"],
+      "amenities": ["Rooftop Pool", "Sky Bar", "Spa Meliá", "Fine Dining", "Business Center", "Concierge"],
+      "image": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vpe_nt",
+          "name": "Deluxe City View",
+          "capacity": 2,
+          "price": 4800000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "city_view", "luxury"],
+          "amenities": ["🏙 City View", "📺 Smart TV", "☕ Nespresso", "🛁 Bathtub"]
+        },
+        {
+          "id": "suite_vpe_nt",
+          "name": "Suite Hướng Biển",
+          "capacity": 2,
+          "price": 6200000,
+          "img_count": 12,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view", "luxury", "suite"],
+          "amenities": ["🌊 Sea View", "🛋 Living Room", "🛁 Jacuzzi", "🍾 Welcome Amenities", "🤵 Meliá Level Service"]
+        }
+      ]
+    },
+    {
+      "id": "vprg_dn",
+      "destination_id": "dn",
+      "destination_name": "Hội An",
+      "name": "Vinpearl Resort & Golf Nam Hội An",
+      "location": "Tây An, Điện Bàn, Quảng Nam, Việt Nam",
+      "rating": 4.8,
+      "reviews": "2.1K",
+      "price": 5800000,
+      "star": 5,
+      "max_guests": 8,
+      "attributes": ["golf", "beach", "family", "couple", "nature"],
+      "amenities": ["Sân golf 18 lỗ", "Beachfront", "Hồ bơi", "Spa", "Nhà hàng", "Kids Club"],
+      "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vprg_dn",
+          "name": "Deluxe Golf View",
+          "capacity": 2,
+          "price": 4200000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "golf_view"],
+          "amenities": ["⛳ Golf Course View", "📺 Smart TV", "☕ Minibar", "🛁 Bathtub"]
+        },
+        {
+          "id": "fam_vprg_dn",
+          "name": "Family Bungalow",
+          "capacity": 4,
+          "price": 5800000,
+          "img_count": 11,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "garden_view", "private_terrace"],
+          "amenities": ["🌿 Garden Terrace", "📺 Smart TV", "🍳 Kitchenette", "👶 Kids Bed"]
+        },
+        {
+          "id": "villa_vprg_dn",
+          "name": "Pool Villa Beachfront",
+          "capacity": 6,
+          "price": 9800000,
+          "img_count": 16,
+          "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "beach_access"],
+          "amenities": ["🏊 Private Pool", "🏖 Beachfront", "🍳 Full Kitchen", "⛳ Golf Cart"]
+        }
+      ]
+    },
+    {
+      "id": "vpcs_ht",
+      "destination_id": "ht",
+      "destination_name": "Hà Tĩnh",
+      "name": "Vinpearl Cửa Sót Resort, Affiliated by Meliá",
+      "location": "Thịnh Lộc, Lộc Hà, Hà Tĩnh, Việt Nam",
+      "rating": 4.4,
+      "reviews": "650",
+      "price": 2800000,
+      "star": 5,
+      "max_guests": 6,
+      "attributes": ["beach", "nature", "family", "eco"],
+      "amenities": ["Beachfront Cửa Sót", "Hồ bơi", "Nhà hàng hải sản", "Kayak & Water Sports", "Meliá Level Service"],
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vpcs_ht",
+          "name": "Deluxe Biển",
+          "capacity": 2,
+          "price": 2000000,
+          "img_count": 7,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "☕ Tea & Coffee", "❄️ AC"]
+        },
+        {
+          "id": "fam_vpcs_ht",
+          "name": "Family Room",
+          "capacity": 4,
+          "price": 2800000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["family", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "👶 Extra Bed", "🛁 Bathtub"]
+        },
+        {
+          "id": "villa_vpcs_ht",
+          "name": "Beachfront Villa",
+          "capacity": 6,
+          "price": 5500000,
+          "img_count": 12,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "villa", "beach_access"],
+          "amenities": ["🏖 Private Beach", "🍳 Kitchenette", "🌊 Sea View", "👨‍👩‍👧‍👦 Family Setup"]
+        }
+      ]
+    },
+    {
+      "id": "vph_ht",
+      "destination_id": "ht",
+      "destination_name": "Hà Tĩnh",
+      "name": "Vinpearl Hà Tĩnh, Affiliated by Meliá",
+      "location": "Thành phố Hà Tĩnh, Hà Tĩnh, Việt Nam",
+      "rating": 4.3,
+      "reviews": "540",
+      "price": 2200000,
+      "star": 5,
+      "max_guests": 4,
+      "attributes": ["city", "business", "couple"],
+      "amenities": ["Hồ bơi trong nhà", "Spa", "Nhà hàng", "Business Center", "Meliá Level Service"],
+      "image": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vph_ht",
+          "name": "Deluxe Room",
+          "capacity": 2,
+          "price": 1800000,
+          "img_count": 6,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "city_view"],
+          "amenities": ["🏙 City View", "📺 Smart TV", "☕ Coffee Machine", "❄️ AC"]
+        },
+        {
+          "id": "suite_vph_ht",
+          "name": "Junior Suite",
+          "capacity": 4,
+          "price": 2200000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["family", "city_view", "suite"],
+          "amenities": ["🏙 City View", "🛋 Living Room", "📺 Smart TV", "🛁 Bathtub"]
+        }
+      ]
+    },
+    {
+      "id": "vpch_na",
+      "destination_id": "na",
+      "destination_name": "Nghệ An",
+      "name": "Vinpearl Cửa Hội Resort, Affiliated by Meliá",
+      "location": "Cửa Hội, Nghi Xuân, Nghệ An, Việt Nam",
+      "rating": 4.4,
+      "reviews": "420",
+      "price": 2500000,
+      "star": 5,
+      "max_guests": 6,
+      "attributes": ["beach", "nature", "family"],
+      "amenities": ["Biển Cửa Hội", "Hồ bơi", "Nhà hàng hải sản", "Water Sports", "Meliá Level Service"],
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vpch_na",
+          "name": "Deluxe Sea View",
+          "capacity": 2,
+          "price": 1800000,
+          "img_count": 7,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "☕ Tea & Coffee", "❄️ AC"]
+        },
+        {
+          "id": "fam_vpch_na",
+          "name": "Family Room",
+          "capacity": 4,
+          "price": 2500000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["family", "sea_view"],
+          "amenities": ["🌊 Sea View", "📺 Smart TV", "👶 Extra Beds", "🛁 Bathtub"]
+        },
+        {
+          "id": "villa_vpch_na",
+          "name": "Beachfront Villa",
+          "capacity": 6,
+          "price": 4800000,
+          "img_count": 12,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "villa", "beach_access"],
+          "amenities": ["🏖 Beachfront", "🍳 Kitchenette", "🌊 Sea View", "👨‍👩‍👧‍👦 Family Setup"]
+        }
+      ]
+    },
+    {
+      "id": "vph_bn",
+      "destination_id": "bn",
+      "destination_name": "Bắc Ninh",
+      "name": "Vinpearl Hotel Bắc Ninh",
+      "location": "Thành phố Bắc Ninh, Bắc Ninh, Việt Nam",
+      "rating": 4.3,
+      "reviews": "380",
+      "price": 1800000,
+      "star": 4,
+      "max_guests": 4,
+      "attributes": ["city", "business", "couple"],
+      "amenities": ["Hồ bơi trong nhà", "Nhà hàng", "Business Center", "Gym", "Meeting Rooms"],
+      "image": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80",
+      "rooms": [
+        {
+          "id": "std_vph_bn",
+          "name": "Standard Room",
+          "capacity": 2,
+          "price": 1200000,
+          "img_count": 6,
+          "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80",
+          "attributes": ["couple", "city_view"],
+          "amenities": ["🏙 City View", "📺 Smart TV", "☕ Tea & Coffee", "❄️ AC"]
+        },
+        {
+          "id": "dlx_vph_bn",
+          "name": "Deluxe Room",
+          "capacity": 2,
+          "price": 1800000,
+          "img_count": 7,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "city_view"],
+          "amenities": ["🏙 City View Premium", "📺 Smart TV", "☕ Nespresso", "🛁 Bathtub"]
+        },
+        {
+          "id": "suite_vph_bn",
+          "name": "Suite Gia Đình",
+          "capacity": 4,
+          "price": 2800000,
+          "img_count": 9,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "city_view", "suite"],
+          "amenities": ["🏙 City View", "🛋 Living Room", "📺 Smart TV x2", "👶 Extra Bed"]
+        }
+      ]
+    },
+    {
+      "id": "vprs_hl",
+      "destination_id": "hl",
+      "destination_name": "Hạ Long",
+      "name": "Vinpearl Resort & Spa Hạ Long",
+      "location": "Bãi Cháy, Hạ Long, Quảng Ninh, Việt Nam",
+      "rating": 4.7,
+      "reviews": "1.8K",
+      "price": 3800000,
+      "star": 5,
+      "max_guests": 8,
+      "attributes": ["nature", "cruise", "family", "couple", "spa"],
+      "amenities": ["Tầm nhìn Vịnh Hạ Long", "Hồ bơi ngoài trời", "Spa & Massage", "Tour Vịnh", "Nhà hàng Hải sản"],
+      "image": "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=700&q=80",
+      "rooms": [
+        {
+          "id": "dlx_vprs_hl",
+          "name": "Deluxe Bay View",
+          "capacity": 2,
+          "price": 2800000,
+          "img_count": 8,
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80",
+          "attributes": ["couple", "bay_view"],
+          "amenities": ["🏝 Hạ Long Bay View", "📺 Smart TV", "☕ Minibar", "🛁 Bathtub"]
+        },
+        {
+          "id": "fam_vprs_hl",
+          "name": "Family Suite Hướng Vịnh",
+          "capacity": 4,
+          "price": 3800000,
+          "img_count": 10,
+          "image": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80",
+          "attributes": ["family", "bay_view", "extra_bed"],
+          "amenities": ["🏝 Bay View", "📺 Smart TV", "🛁 Bathtub", "👶 Extra Bed", "🍳 Kitchenette"]
+        },
+        {
+          "id": "villa_vprs_hl",
+          "name": "Pool Villa Hướng Vịnh",
+          "capacity": 6,
+          "price": 7500000,
+          "img_count": 14,
+          "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "bay_view"],
+          "amenities": ["🏊 Private Pool", "🏝 Bay View", "🍳 Full Kitchen", "🚤 Boat Tour Included"]
+        },
+        {
+          "id": "villa3_vprs_hl",
+          "name": "Grand Villa 3 Phòng Ngủ",
+          "capacity": 8,
+          "price": 11000000,
+          "img_count": 18,
+          "image": "https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=700&q=80",
+          "attributes": ["family", "villa", "private_pool", "bay_view", "premium"],
+          "amenities": ["🏊 Private Pool", "🏝 Panoramic Bay View", "🍳 Full Kitchen", "🚤 Private Boat Tour", "🧖 In-villa Spa"]
+        }
+      ]
+    }
+  ]
+}

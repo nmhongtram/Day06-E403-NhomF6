@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>VinpearlAI</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { DEFAULT:'#E3A01E', dark:'#C98A12', light:'#F5C842', pale:'#FEF3C7' } } } }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; }
+    .phone-frame { width: 390px; height: 844px; background: #f5f5f5; border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 8px #2a2a3e, 0 0 0 10px #111; }
+    .screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; background: #f5f5f5; }
+    .screen::-webkit-scrollbar { display: none; }
+
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes chatUp { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
+    @keyframes checkIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    @keyframes dotBounce { 0%,80%,100%{transform:scale(.6);opacity:.5} 40%{transform:scale(1);opacity:1} }
+    @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+    .shimmer-bg { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+    .slide-up { animation: slideUp .4s ease-out both; }
+    .slide-up-1 { animation-delay: .08s; }
+    .slide-up-2 { animation-delay: .16s; }
+    .slide-up-3 { animation-delay: .24s; }
+    .fade-in { animation: fadeIn .3s ease-out both; }
+    .check-in { animation: checkIn .25s ease-out both; }
+    .timer-pulse { animation: timerPulse 1s ease-in-out infinite; }
+
+    .btn-orange { background: #E3A01E; color: white; border-radius: 10px; padding: 13px 20px; font-weight: 700; font-size: 15px; width: 100%; border: none; cursor: pointer; transition: transform .15s; box-shadow: 0 3px 10px rgba(227,160,30,.4); }
+    .btn-orange:active { transform: scale(0.97); }
+    .btn-orange:disabled { opacity: .5; cursor: default; }
+    .btn-outline { background: white; color: #E3A01E; border: 1.5px solid #E3A01E; border-radius: 10px; padding: 12px 20px; font-weight: 600; font-size: 14px; width: 100%; cursor: pointer; }
+    .btn-gray { background: #ebebef; color: #444; border-radius: 10px; padding: 13px 20px; font-weight: 600; font-size: 14px; width: 100%; border: none; cursor: pointer; }
+
+    /* Bottom Nav */
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: white; border-top: 1px solid #e8e8e8; display: flex; z-index: 30; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; border: none; background: transparent; padding: 6px 0 8px; }
+    .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 500; }
+
+    /* Chat FAB */
+    .chat-fab { position: absolute; bottom: 70px; right: 14px; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg,#E3A01E,#C98A12); border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(227,160,30,.55); display: flex; align-items: center; justify-content: center; z-index: 40; transition: transform .15s; font-size: 22px; }
+    .chat-fab:active { transform: scale(0.88); }
+
+    /* Chat overlay */
+    .chat-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 50; display: flex; flex-direction: column; justify-content: flex-end; animation: fadeIn .2s ease-out; }
+    .chat-panel { background: white; border-radius: 20px 20px 0 0; height: 85%; display: flex; flex-direction: column; animation: chatUp .3s ease-out; }
+    .chat-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px 12px; border-bottom: 1px solid #f0f0f0; border-radius: 20px 20px 0 0; flex-shrink: 0; }
+    .chat-body { flex: 1; overflow-y: auto; padding: 12px 14px 8px; scrollbar-width: none; }
+    .chat-body::-webkit-scrollbar { display: none; }
+    .chat-footer { flex-shrink: 0; border-top: 1px solid #ebebeb; padding: 10px 14px 14px; background: white; }
+    .bubble-bot { background: #f0f0f0; border-radius: 4px 16px 16px 16px; padding: 10px 14px; font-size: 13.5px; color: #222; max-width: 82%; line-height: 1.5; }
+    .bubble-user { background: #1A73E8; border-radius: 16px 4px 16px 16px; padding: 10px 14px; font-size: 13.5px; color: white; max-width: 72%; margin-left: auto; line-height: 1.5; }
+    .chat-input { flex: 1; background: #f5f5f5; border: none; border-radius: 22px; padding: 10px 16px; font-size: 13.5px; outline: none; }
+    .quick-reply-btn { background: white; border: 1.5px solid #1A73E8; color: #1A73E8; border-radius: 22px; padding: 7px 16px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
+    .quick-reply-btn:active { background: #1A73E8; color: white; }
+    .thinking-dot { width: 5px; height: 5px; border-radius: 50%; background: #999; display: inline-block; animation: dotBounce 1.2s infinite ease-in-out; }
+    .thinking-dot:nth-child(2) { animation-delay: .2s; }
+    .thinking-dot:nth-child(3) { animation-delay: .4s; }
+
+    /* Hotel / booking UI */
+    .info-bar { background: white; border-bottom: 1px solid #e5e5e5; display: flex; font-size: 11px; overflow: hidden; }
+    .info-cell { flex: 1; padding: 8px 8px; border-right: 1px solid #e5e5e5; min-width: 0; }
+    .info-cell:last-child { border-right: none; }
+    .ta-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .hotel-card { background: white; border-radius: 14px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 1px 8px rgba(0,0,0,.07); cursor: pointer; }
+    .room-tab { background: white; display: flex; border-bottom: 2px solid #e5e5e5; }
+    .room-tab-item { padding: 12px 20px; font-size: 14px; font-weight: 700; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: #999; }
+    .room-tab-item.active { color: #E3A01E; border-bottom-color: #E3A01E; }
+    .room-card { background: white; margin-bottom: 8px; }
+    .step-bar-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 20px; }
+    .step-circle { width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .step-line { height: 1.5px; width: 36px; background: #ddd; }
+    .form-row { margin-bottom: 18px; }
+    .form-label { font-size: 12.5px; color: #555; margin-bottom: 5px; display: block; }
+    .form-input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 11px 13px; font-size: 14px; background: white; outline: none; transition: border-color .15s; }
+    .form-input:focus { border-color: #E3A01E; }
+    .form-select { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 11px 13px; font-size: 14px; background: white; outline: none; -webkit-appearance: none; }
+    .cb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; cursor: pointer; }
+    .cb-box { width: 20px; height: 20px; border-radius: 4px; background: #E3A01E; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .price-footer { position: sticky; bottom: 0; background: white; border-top: 1px solid #e5e5e5; padding: 10px 16px 12px; display: flex; justify-content: space-between; align-items: center; }
+    .hold-box { background: #FFF8EE; border: 1px solid #FFE4A0; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .scroll-pb { padding-bottom: 80px; }
+    input:focus { outline: none; }
+    select:focus { outline: none; }
+  </style>
+</head>
+<body>
+<div class="phone-frame" id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── BRAND ASSETS ─────────────────────────────────────────────────────────────
+const APP_NAME = 'VinpearlAI';
+const VINPEARL_LOGO = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODkiIGhlaWdodD0iNTEiIHZpZXdCb3g9IjAgMCA4OSA1MSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjk5MDYgMzcuNTY5NEw3LjI4MTA2IDQ4LjA1MjRMMy45Mzk0MSAzOC43NjgzQzMuODM1NzUgMzguNDM5OCAzLjYzNjA1IDM4LjE1IDMuMzY2MTMgMzcuOTM2M0MzLjA5NjIgMzcuNzIyNSAyLjc2ODQ2IDM3LjU5NDggMi40MjUyNCAzNy41Njk0SDBMMC4wNzkxMzE3IDM3Ljc4MzVDMC4zOTE0MDIgMzcuODA0MSAwLjY5MDA3NyAzNy45MTkxIDAuOTM1NjM0IDM4LjExMzNDMS4xODExOSAzOC4zMDc1IDEuMzYyMDUgMzguNTcxNyAxLjQ1NDI5IDM4Ljg3MTFMNS44MDg2IDUwLjk4ODZINy42MTc5TDEyLjM1OTMgMzcuNTY4NEgxMC45OTA2VjM3LjU2OTRaIiBmaWxsPSIjMkEzOThDIi8+CjxwYXRoIGQ9Ik0xNi4zNzg0IDQ5LjUxN0MxNi4zNzg0IDQ5LjA2MzEgMTYuMzc4NCAzNy43NTQ5IDE2LjM3ODQgMzcuNzU0OUgxNC4wMTUyVjQ5LjUyNDVDMTQuMDE1MiA0OS41MjQ1IDEzLjk2MjggNTAuOTg4OSAxNS4yMTM5IDUwLjk4ODlIMTcuMDQzNVY1MC44MTMzQzE3LjA0MzUgNTAuODEzMyAxNi4zNzg0IDUwLjY4ODEgMTYuMzc4NCA0OS41MTdaIiBmaWxsPSIjMkEzOThDIi8+CjxwYXRoIGQ9Ik0zMC4zMzk2IDQ5LjQ3ODFWMzcuODEwMkwzMC4zNDgyIDM3Ljc1MDJIMjkuMDUxMUgyOS4wNDA0VjQ3LjU2NDFMMjEuOTgyOCAzNy43NTc3SDE4LjYwNjlMMTguNjMwNSAzNy44OThDMTguODkwOCAzOC4xMTQxIDE5LjA5MzUgMzguMzkxNiAxOS4yMjA0IDM4LjcwNTRDMTkuMzQ3MyAzOS4wMTkzIDE5LjM5NDUgMzkuMzU5NyAxOS4zNTc2IDM5LjY5NjNWNTAuNjE0OUMxOS4zNTc2IDUwLjYzMzEgMTkuMzY2MiA1MC42NTAzIDE5LjM2NjIgNTAuNjY3NFY1MC43NzQ0QzE5LjM2NjIgNTAuNzk0OCAxOS4zNTc2IDUwLjgxODMgMTkuMzU3NiA1MC44NDRWNTAuOTkzOUgyMC42Njk3VjUwLjk2OTJWMzkuODQ5NEwyOC43MDE0IDUwLjk4OTZIMzEuMDdMMzEuMDU3MSA1MC44MTk0QzMwLjgxNzIgNTAuNjkzNCAzMC42MjA1IDUwLjQ5ODIgMzAuNDkyNiA1MC4yNTlDMzAuMzY0NyA1MC4wMTk5IDMwLjMxMTQgNDkuNzQ3OSAzMC4zMzk2IDQ5LjQ3ODFaIiBmaWxsPSIjMkEzOThDIi8+CjxwYXRoIGQ9Ik0zNi43MTEyIDM3Ljc1NDlIMzEuOTY3N0wzMS45ODU4IDM3Ljg5NTFDMzEuOTg1OCAzNy44OTUxIDMyLjY1MzEgMzguMTIyIDMyLjcyNjkgMzkuNjE2NFY0OS41MjQ1QzMyLjcyNjkgNDkuNTI0NSAzMi43MDIzIDUwLjk4ODkgMzMuOTE2IDUwLjk4ODlIMzUuODU0N1Y1MC44MjcyQzM1LjYxNTMgNTAuNzA4NCAzNS40MTY1IDUwLjUyMTIgMzUuMjgzMyA1MC4yODk0QzM1LjE1MDEgNTAuMDU3NSAzNS4wODg0IDQ5Ljc5MTQgMzUuMTA2MSA0OS41MjQ1VjQ0Ljc5OTVIMzcuMTA1OEMzNy41NzQxIDQ0LjgwNiA0MS40OTc1IDQ0LjkzNDQgNDEuNDk3NSA0MS40MDE5QzQxLjQ5NzUgMzcuOTMzNiAzOC4yMTU4IDM3Ljc1NDkgMzYuNzEwMSAzNy43NTQ5SDM2LjcxMTJaTTM2LjU5NDYgNDMuNjg5NUMzNS44ODM1IDQzLjY4OTUgMzUuMTA1MSA0My42ODk1IDM1LjEwNTEgNDMuNjg5NVYzOC44ODMxSDM2LjY2MzFDMzguMDI1NCAzOC44ODMxIDM5LjEyMjUgMzkuMjI0NiAzOS4xMjI1IDQxLjM5ODdDMzkuMTIyNSA0My41IDM3LjQ1OTcgNDMuNjg5NSAzNi41OTA0IDQzLjY4OTUiIGZpbGw9IiMyQTM5OEMiLz4KPHBhdGggZD0iTTUwLjkwNTkgNDkuNjE2Nkg0NS44OTI4VjQ0LjkyMjdINTEuMTQxMUw1MS4xNTUgNDQuODU1MlY0My42MTM1TDUxLjE0MTEgNDMuNTQzOUg0NS44OTI4VjM5LjEyODNINTAuMTU4NEM1MS4xMzkgMzkuMTI4MyA1MS40NDE2IDM5LjQ1OCA1MS41MjgyIDM5LjY5MzVINTEuNzM1N0w1MS40OTQgMzguMzAxOUM1MS4zNjU3IDM4LjExMjggNTEuMTg4NSAzNy45NjIgNTAuOTgxNCAzNy44NjU3QzUwLjc3NDIgMzcuNzY5NCA1MC41NDQ5IDM3LjczMTEgNTAuMzE3NyAzNy43NTQ5SDQyLjc0OUw0Mi43NzA0IDM3Ljg5NTJDNDIuNzcwNCAzNy44OTUyIDQzLjQ3MTkgMzguMTMyOCA0My41MTA0IDM5Ljc1NDVWNTAuOTg4OUg1MS4wMTE3QzUxLjM0ODIgNTAuOTk2OCA1MS42NzcyIDUwLjg4ODMgNTEuOTQzMSA1MC42ODE3TDUyLjE0NjMgNDkuMDQwN0g1MS45Nzk1QzUxLjgyMDEgNDkuNjU3MyA1MS4wMTA3IDQ5LjYxNjYgNTAuOTA0OCA0OS42MTY2IiBmaWxsPSIjMkEzOThDIi8+CjxwYXRoIGQ9Ik02NC45NDEzIDQ5LjUxNzhMNjEuNjc3NyAzOS4yNjVMNjEuNzQwOCAzOS40NjE5QzYxLjQ1NzQgMzguNTc5OSA2MS4yNzU2IDM4LjAyMjIgNjEuNTEwOSAzNy43NTk5TDYxLjQ4OTUgMzcuNjEzM0g1OC4yNTA1TDU2LjA4MjkgNDQuMjA5NEM1NS4wNDQ2IDQ0LjI3MDQgNTQuMDE5MiA0My45NTM4IDUzLjE5NTggNDMuMzE3N0w1My4xNjggNDMuNDk4NkM1My4xNTQxIDQzLjQ5MDEgNTMuNzcxMSA0NC43MDYxIDUzLjc5ODkgNDQuNzMwN0M1NC4zNzg5IDQ1LjE0MjMgNTUuMDUxNCA0NS40MDQ1IDU1Ljc1NjggNDUuNDkzOUw1NC4wMTE3IDUwLjk4ODZMNTQuMDU3NiA1MC45ODMySDU1LjQ3MDJMNTcuMjMzNSA0NS41ODQ5SDU5Ljk4ODFDNjAuMzE3NSA0NS41NTU5IDYwLjY0NjcgNDUuNjQzMSA2MC45MTg3IDQ1LjgzMTNDNjEuMTkwNyA0Ni4wMTk2IDYxLjM4ODUgNDYuMjk3IDYxLjQ3NzcgNDYuNjE1OEw2Mi40MjgzIDQ5LjUxNjdDNjIuNDI4MyA0OS41MTY3IDYyLjgyMDggNTAuOTgzMiA2My44NTggNTAuOTgzMkg2NS43MTc2TDY1LjcxMDEgNTAuODUyNkM2NS4yNzI4IDUwLjYzODUgNjQuOTYxNiA0OS42MTQxIDY0LjkzNyA0OS41MTY3TDY0Ljk0MTMgNDkuNTE3OFpNNTkuOTExMiA0NC4yMTM3SDU3LjU0MDRMNTkuMTY5IDM5LjIwNUw2MC44OTkyIDQ0LjRDNjAuNTk4NiA0NC4yNDQ4IDYwLjI1OTUgNDQuMTgwMSA1OS45MjI5IDQ0LjIxMzciIGZpbGw9IiMyQTM5OEMiLz4KPHBhdGggZD0iTTc2LjQwNDcgNDcuNzUzNkM3NS45ODg1IDQ2Ljk2NTEgNzUuNTE5NyA0Ni4yMDU1IDc1LjAwMTggNDUuNDhDNzQuNjcwOSA0NS4wNTk4IDc0LjI1NyA0NC43MTI1IDczLjc4NTkgNDQuNDU5OEM3NC4zNjM4IDQ0LjI5NTMgNzQuODg2NiA0My45Nzc3IDc1LjI5OTIgNDMuNTQwNkM3NS43MTE4IDQzLjEwMzUgNzUuOTk4OSA0Mi41NjMxIDc2LjEzMDMgNDEuOTc2MkM3Ni4yNjE2IDQxLjM4OTQgNzYuMjMyNCA0MC43NzggNzYuMDQ1NyA0MC4yMDY0Qzc1Ljg1ODkgMzkuNjM0OCA3NS41MjE1IDM5LjEyNDMgNzUuMDY5MSAzOC43Mjg2Qzc0LjIwNDkgMzguMDQxMiA3My4xMTk2IDM3LjY5MzcgNzIuMDE3MyAzNy43NTEzSDY2LjY1MTRMNjYuNjc0OSAzNy44OTE1QzY2LjY3NDkgMzcuODkxNSA2Ny4zNDIyIDM4LjEyMTcgNjcuNDA5NSAzOS42MjY3VjQwLjAxMUM2Ny40MDk1IDQwLjA2OTkgNjcuNDIwMiA0MC4xMzA5IDY3LjQyMDIgNDAuMTkxOVY0OC41MDkzQzY3LjQyMDIgNDguNTY3MSA2Ny40MDk1IDQ4LjYyNiA2Ny40MDk1IDQ4LjY4NDlWNTAuOTg5Nkg2OS43NzdWNDUuMTkwOUg3MC44NTgxQzcyLjIwMjMgNDUuMTkwOSA3Mi43MzkxIDQ2LjE1NDMgNzMuODE1OSA0OC4wNDhDNzQuMjEzOSA0OC43NjcgNzQuNjQ3OSA0OS40NjU0IDc1LjExNjIgNTAuMTQwN0M3NS4yODI5IDUwLjQxNzggNzUuNTIyOCA1MC42NDM2IDc1LjgwOTMgNTAuNzkzMUM3Ni4wOTU5IDUwLjk0MjcgNzYuNDE4MSA1MS4wMTAzIDc2Ljc0MDUgNTAuOTg4NUg3OC43MTY2VjUwLjk4MzFMNzguNzI0MSA1MC44MjlDNzguMDIxNSA1MC42NDI3IDc3LjM5MjggNDkuNDgzNCA3Ni40MDA0IDQ3Ljc1MjVMNzYuNDA0NyA0Ny43NTM2Wk03MS42Njg3IDQzLjc4NDRINjkuNzcyN1YzOC44NjAzSDcxLjQ0NDFDNzEuNzY3OCAzOC44MzE0IDcyLjA5MzkgMzguODczMyA3Mi4zOTk4IDM4Ljk4MjlDNzIuNzA1OCAzOS4wOTI1IDcyLjk4NDMgMzkuMjY3MyA3My4yMTYyIDM5LjQ5NTFDNzMuNDQ4MSAzOS43MjMgNzMuNjI3OSAzOS45OTg2IDczLjc0MyA0MC4zMDI3QzczLjg1ODIgNDAuNjA2OSA3My45MDYgNDAuOTMyNSA3My44ODMyIDQxLjI1N0M3My45MTM1IDQxLjU3MDIgNzMuODc5MyA0MS44ODYyIDczLjc4MjggNDIuMTg1NkM3My42ODYzIDQyLjQ4NSA3My41Mjk0IDQyLjc2MTUgNzMuMzIyIDQyLjk5NzhDNzMuMTE0NiA0My4yMzQyIDcyLjg2MDkgNDMuNDI1NCA3Mi41NzY3IDQzLjU1OThDNzIuMjkyNSA0My42OTQyIDcxLjk4MzggNDMuNzY4OCA3MS42Njk3IDQzLjc3OSIgZmlsbD0iIzJBMzk4QyIvPgo8cGF0aCBkPSJNODguOTczMyA0OS42MTY2SDgyLjgyNjhMODIuODA1NCA0OS42MDQ4VjQwLjIxOEM4Mi44MDU0IDQwLjExMSA4Mi44MTYxIDQwLjU4NTIgODIuODE2MSAzOS4zMjUyQzgyLjgxNjEgMzcuNzkyNCA4MS42MTk1IDM3Ljc1NDkgODEuNjE5NSAzNy43NTQ5SDc5LjY4NjJMNzkuNzA5NyAzNy44OTUxQzc5LjcwOTcgMzcuODk1MSA4MC4zNTEzIDM4LjEwOTIgODAuNDQxMSAzOS41MzI5VjM5LjkzNTRDODAuNDQxMSAzOS45NzM5IDgwLjQ0ODYgNDAuMDE0NiA4MC40NDg2IDQwLjA0OTlWNDguMzk5NUM4MC40NDg2IDQ4LjQzOTEgODAuNDQxMSA0OC40NzQ0IDgwLjQ0MTEgNDguNTE2MVY1MC45ODg5SDg4LjgyNTdMODkgNDkuNjA4TDg4Ljk3MzMgNDkuNjE2NloiIGZpbGw9IiMyQTM5OEMiLz4KPHBhdGggZD0iTTYwLjk1OTIgMC4wMDI3MzE3MUM1MS44NDUzIDEuMDg2MTYgNDIuNTI4MiA0LjA2MDgxIDQxLjkxMDQgMTMuMDYzOUM0MS42MjM3IDE3LjI3NDggNDIuOTMxNyAyMC40Mzc4IDQ0LjQwNjYgMjMuNDkxNkM0MC43MDI2IDE5Ljg3ODMgMzUuMzUzOSAxNi45ODAxIDI3Ljg1NjggMTcuNjg2OUMzMi40MjM1IDE4Ljk2OTYgMzcuODE0IDIxLjQyMyA0MC43MTA5IDI0LjY2NTFDNDEuMzIzMiAyNS4zNTU1IDQyLjIxOTMgMjYuNTUwOSA0Mi4wMDc4IDI3LjU2NjFDNDEuNjU3MSAyOS4yNzcyIDM4LjQ3NjMgMjguOTI3OSAzNi41NTA1IDI5LjAyMDZDNDAuNTQ0IDMwLjYwNjIgNDUuMDA3NyAzMy40NjM1IDUwLjcwMTUgMzMuMjc3OUM1My41NDg0IDMzLjE4NzkgNTUuNjM4MyAzMS40NzQgNTUuNDE4NSAyOC4yOTQ3QzU1LjAxNzcgMjIuNTgyOCA1MC43NzM5IDE3LjcwMDYgNTAuMzI4NiAxMS4yNDY0QzQ5LjgzMzIgMy45NjUzIDU0Ljk5NTUgMS4yOTM1NiA2MC43ODExIDAuMDk4MjQxNUM2MC44OTggMC4xMzM3MTkgNjEuMDgxNiAwLjA5ODI1NDIgNjEuMTI4OSAwLjA2MDA0NzZDNjEuMTY3OSAwLjAzMjc1NzIgNjEuMTMxNyAwIDYwLjk3MzEgMEg2MC45NTkyVjAuMDAyNzMxNzFaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMTYwNDRfMTA5NzQ5KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzE2MDQ0XzEwOTc0OSIgeDE9IjQ0LjUwMDEiIHkxPSIwIiB4Mj0iNDQuNTAwMSIgeTI9IjMzLjI4NjYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iI0NGODczQyIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNGMkE4NDIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K';
+// Placeholder gradient shown when hotel/room image fails to load
+function handleImgError(e) {
+  e.target.onerror = null;
+  e.target.style.display = 'none';
+  if (e.target.parentElement) {
+    // Only add background — never overwrite minHeight (prevents home hero from shrinking)
+    e.target.parentElement.style.background = 'linear-gradient(135deg,#1a2a6c 0%,#744210 60%,#c05621 100%)';
+  }
+}
+
+// Strip markdown syntax — prevent LLM formatting leaking into chat bubbles
+function stripMd(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const cleaned = [];
+  for (const line of lines) {
+    const t = line.trim();
+    // Drop list items, numbered items, and standalone image lines
+    if (!t) continue;
+    if (/^[-*•]\s/.test(t)) continue;
+    if (/^\d+\.\s/.test(t)) continue;
+    if (/^!\[/.test(t)) continue;
+    // Strip inline markdown from kept lines
+    const stripped = t
+      .replace(/!\[.*?\]\(.*?\)/g, '')      // inline images
+      .replace(/\*\*(.+?)\*\*/g, '$1')      // **bold**
+      .replace(/\*(.+?)\*/g, '$1')           // *italic*
+      .replace(/`(.+?)`/g, '$1')             // `code`
+      .replace(/\[(.+?)\]\(.*?\)/g, '$1')   // [link](url)
+      .replace(/^#{1,6}\s+/, '')              // headers
+      .trim();
+    if (stripped.length > 0) cleaned.push(stripped);
+  }
+  return cleaned.join('\n').trim();
+}
+
+// ─── USER PROFILE (auto-fill source) ─────────────────────────────────────────
+const USER = {
+  name: 'Nguyen Van An',
+  short: 'An',
+  last_name: 'Nguyen',
+  first_name: 'Van An',
+  email: 'nguyenvanan@example.com',
+  phone: '',
+  country_code: '+84',
+  nationality: '',
+  member_level: 'Member',
+  points: '0 đ',
+};
+
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+const HOTELS = {
+  pq: [
+    { id:'vpww', name:'Vinpearl Wonderworld Phú Quốc', location:'Bãi Dài, đảo Phú Quốc, tỉnh Kiên Giang, Việt Nam', rating:4.9, reviews:'3.1K', price:6954000,
+      image:'https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=700&q=80' },
+    { id:'vprs_pq', name:'Vinpearl Resort & Spa Phú Quốc', location:'Bãi Dài, Gành Dầu, Phú Quốc, Kiên Giang, Việt Nam', rating:4.7, reviews:'4.5K', price:4200000,
+      image:'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=700&q=80' },
+    { id:'vhf_pq', name:'VinHolidays Fiesta Phú Quốc', location:'Bãi Dài, Phú Quốc, Kiên Giang, Việt Nam', rating:4.5, reviews:'2.2K', price:3100000,
+      image:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&q=80' },
+  ],
+  nt: [
+    { id:'vprs_nt', name:'Vinpearl Resort & Spa Nha Trang Bay', location:'Đảo Hòn Tre, Nha Trang, Khánh Hòa', rating:4.8, reviews:'2.8K', price:5200000,
+      image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80' },
+    { id:'vpl_nt', name:'Vinpearl Luxury Nha Trang', location:'Hòn Tre, Nha Trang, Khánh Hòa, Việt Nam', rating:4.9, reviews:'1.9K', price:8900000,
+      image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+    { id:'vpr_nt', name:'Vinpearl Resort Nha Trang', location:'Đảo Hòn Tre, Nha Trang, Khánh Hòa', rating:4.5, reviews:'3.2K', price:2500000,
+      image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80' },
+    { id:'vpbf_nt', name:'Vinpearl Beachfront Nha Trang', location:'Trần Phú, Nha Trang, Khánh Hòa', rating:4.6, reviews:'1.5K', price:3800000,
+      image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80' },
+    { id:'htr_nt', name:'Hòn Tằm Resort', location:'Đảo Hòn Tằm, Nha Trang, Khánh Hòa, Việt Nam', rating:4.7, reviews:'1.2K', price:4500000,
+      image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80' },
+    { id:'vpe_nt', name:'Vinpearl Empire Nha Trang, Affiliated by Meliá', location:'72 Trần Phú, Nha Trang, Khánh Hòa', rating:4.8, reviews:'980', price:6200000,
+      image:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80' },
+  ],
+  dn: [
+    { id:'vprg_dn', name:'Vinpearl Resort & Golf Nam Hội An', location:'Tây An, Điện Bàn, Quảng Nam, Việt Nam', rating:4.8, reviews:'2.1K', price:5800000,
+      image:'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=700&q=80' },
+  ],
+  ht: [
+    { id:'vpcs_ht', name:'Vinpearl Cửa Sót Resort, Affiliated by Meliá', location:'Thịnh Lộc, Lộc Hà, Hà Tĩnh, Việt Nam', rating:4.4, reviews:'650', price:2800000,
+      image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=80' },
+    { id:'vph_ht', name:'Vinpearl Hà Tĩnh, Affiliated by Meliá', location:'Thành phố Hà Tĩnh, Hà Tĩnh, Việt Nam', rating:4.3, reviews:'540', price:2200000,
+      image:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80' },
+  ],
+  na: [
+    { id:'vpch_na', name:'Vinpearl Cửa Hội Resort, Affiliated by Meliá', location:'Cửa Hội, Nghi Xuân, Nghệ An, Việt Nam', rating:4.4, reviews:'420', price:2500000,
+      image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80' },
+  ],
+  bn: [
+    { id:'vph_bn', name:'Vinpearl Hotel Bắc Ninh', location:'Thành phố Bắc Ninh, Bắc Ninh, Việt Nam', rating:4.3, reviews:'380', price:1800000,
+      image:'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=700&q=80' },
+  ],
+  hl: [
+    { id:'vprs_hl', name:'Vinpearl Resort & Spa Hạ Long', location:'Bãi Cháy, Hạ Long, Quảng Ninh, Việt Nam', rating:4.7, reviews:'1.8K', price:3800000,
+      image:'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=700&q=80' },
+  ],
+};
+
+const ROOMS = {
+  vpww: [
+    { id:'dlx_vpww', name:'Phòng Deluxe Hướng Biển', capacity:2, price:4500000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fs_vpww', name:'Biệt Thự 2 Phòng Ngủ', capacity:4, price:6954000, img_count:10, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+    { id:'villa3_vpww', name:'Biệt Thự 3 Phòng Ngủ', capacity:6, price:8635500, img_count:19, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+    { id:'villa4_vpww', name:'Biệt Thự 4 Phòng Ngủ Premium', capacity:8, price:12000000, img_count:22, image:'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=700&q=80' },
+  ],
+  vprs_pq: [
+    { id:'sup_vprs_pq', name:'Superior Garden View', capacity:2, price:3200000, img_count:7, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'ocean_vprs_pq', name:'Ocean View Suite', capacity:2, price:4200000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'villa_vprs_pq', name:'Beach Front Villa', capacity:4, price:6100000, img_count:12, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+  ],
+  vhf_pq: [
+    { id:'std_vhf_pq', name:'Standard Room', capacity:2, price:2200000, img_count:6, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'fam_vhf_pq', name:'Family Room', capacity:4, price:3100000, img_count:9, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'suite_vhf_pq', name:'Junior Suite Gia Đình', capacity:6, price:4800000, img_count:11, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vprs_nt: [
+    { id:'dlx_vprs_nt', name:'Phòng Deluxe Hướng Vịnh', capacity:2, price:3800000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fam_vprs_nt', name:'Family Suite Hướng Biển', capacity:4, price:5200000, img_count:10, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+    { id:'villa_vprs_nt', name:'Pool Villa 3 Phòng Ngủ', capacity:6, price:9500000, img_count:14, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+  ],
+  vpl_nt: [
+    { id:'prem_vpl_nt', name:'Premier Room Hướng Biển', capacity:2, price:6500000, img_count:10, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'suite_vpl_nt', name:'Ocean Suite', capacity:2, price:8900000, img_count:13, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'villa2_vpl_nt', name:'Luxury Villa 2 Phòng Ngủ', capacity:4, price:14000000, img_count:18, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vpr_nt: [
+    { id:'std_vpr_nt', name:'Standard Room', capacity:2, price:1800000, img_count:6, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'fam_vpr_nt', name:'Family Room', capacity:4, price:2500000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'suite_vpr_nt', name:'Junior Suite', capacity:5, price:3800000, img_count:10, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vpbf_nt: [
+    { id:'dlx_vpbf_nt', name:'Deluxe Sea View', capacity:2, price:3800000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fam_vpbf_nt', name:'Family Connecting Room', capacity:4, price:5600000, img_count:10, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+  ],
+  htr_nt: [
+    { id:'bung_htr_nt', name:'Garden Bungalow', capacity:2, price:3200000, img_count:9, image:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&q=80' },
+    { id:'vbung_htr_nt', name:'Beach Bungalow', capacity:2, price:4500000, img_count:11, image:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80' },
+    { id:'villa_htr_nt', name:'Family Villa', capacity:5, price:7200000, img_count:14, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vpe_nt: [
+    { id:'dlx_vpe_nt', name:'Deluxe City View', capacity:2, price:4800000, img_count:9, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'suite_vpe_nt', name:'Suite Hướng Biển', capacity:2, price:6200000, img_count:12, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+  ],
+  vprg_dn: [
+    { id:'dlx_vprg_dn', name:'Deluxe Golf View', capacity:2, price:4200000, img_count:8, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'fam_vprg_dn', name:'Family Bungalow', capacity:4, price:5800000, img_count:11, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+    { id:'villa_vprg_dn', name:'Pool Villa Beachfront', capacity:6, price:9800000, img_count:16, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+  ],
+  vpcs_ht: [
+    { id:'dlx_vpcs_ht', name:'Deluxe Biển', capacity:2, price:2000000, img_count:7, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fam_vpcs_ht', name:'Family Room', capacity:4, price:2800000, img_count:9, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'villa_vpcs_ht', name:'Beachfront Villa', capacity:6, price:5500000, img_count:12, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vph_ht: [
+    { id:'dlx_vph_ht', name:'Deluxe Room', capacity:2, price:1800000, img_count:6, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'suite_vph_ht', name:'Junior Suite', capacity:4, price:2200000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+  ],
+  vpch_na: [
+    { id:'dlx_vpch_na', name:'Deluxe Sea View', capacity:2, price:1800000, img_count:7, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fam_vpch_na', name:'Family Room', capacity:4, price:2500000, img_count:9, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'villa_vpch_na', name:'Beachfront Villa', capacity:6, price:4800000, img_count:12, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vph_bn: [
+    { id:'std_vph_bn', name:'Standard Room', capacity:2, price:1200000, img_count:6, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'dlx_vph_bn', name:'Deluxe Room', capacity:2, price:1800000, img_count:7, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'suite_vph_bn', name:'Suite Gia Đình', capacity:4, price:2800000, img_count:9, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+  ],
+  vprs_hl: [
+    { id:'dlx_vprs_hl', name:'Deluxe Bay View', capacity:2, price:2800000, img_count:8, image:'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=700&q=80' },
+    { id:'fam_vprs_hl', name:'Family Suite Hướng Vịnh', capacity:4, price:3800000, img_count:10, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+    { id:'villa_vprs_hl', name:'Pool Villa Hướng Vịnh', capacity:6, price:7500000, img_count:14, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+    { id:'villa3_vprs_hl', name:'Grand Villa 3 Phòng Ngủ', capacity:8, price:11000000, img_count:18, image:'https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=700&q=80' },
+  ],
+  _default: [
+    { id:'deluxe', name:'Deluxe Room', capacity:2, price:3200000, img_count:6, image:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=700&q=80' },
+    { id:'fam', name:'Family Suite', capacity:4, price:5400000, img_count:10, image:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=700&q=80' },
+    { id:'villa', name:'Pool Villa', capacity:6, price:8000000, img_count:12, image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=700&q=80' },
+  ],
+};
+
+const PROMOS = [
+  { id:'p1', title:'Nhập mã HAPPY10 nhận ưu đãi độc quyền trên app Vinpearl tới 30%',
+    image:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80' },
+  { id:'p2', title:'Pure Pure - Khám phá miền núi thiên nhiên hoang sơ',
+    image:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80' },
+];
+
+const SUGGESTIONS = [
+  { id:'s1', name:'VinWonders Phú Quốc', discount:null,
+    image:'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80' },
+  { id:'s2', name:'Vinpearl Luxury Nha Trang', discount:20,
+    image:'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400&q=80' },
+  { id:'s3', name:'Vinpearl Resort Đà Nẵng', discount:20,
+    image:'https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=400&q=80' },
+];
+
+const DEST_NAMES = { pq:'Phu Quoc', nt:'Nha Trang', dn:'Hoi An', ht:'Ha Tinh', na:'Nghe An', bn:'Bac Ninh', hl:'Ha Long' };
+
+const fmt = n => (n||0).toLocaleString('vi-VN') + 'đ';
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const API_BASE = window.location.protocol === 'file:' ? null : '';
+
+// ── Availability data (mirrors backend _BOOKED_DATES) ────────────────────────
+// hotel_id → room_id → ['YYYY-MM-DD', ...] fully booked dates
+const HOTEL_AVAILABILITY = {
+  vprs_nt:  { dlx_vprs_nt:  ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21','2026-06-27','2026-06-28'], fam_vprs_nt: ['2026-06-07','2026-06-14','2026-06-21','2026-06-28'], villa_vprs_nt: ['2026-06-06','2026-06-07','2026-06-08'] },
+  vpl_nt:   { prem_vpl_nt:  ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21'], suite_vpl_nt: ['2026-06-07','2026-06-14','2026-06-20','2026-06-21','2026-06-27','2026-06-28'], villa2_vpl_nt: ['2026-06-06','2026-06-07'] },
+  vpr_nt:   { std_vpr_nt:   ['2026-06-06','2026-06-07','2026-06-08','2026-06-13','2026-06-14','2026-06-15','2026-06-20','2026-06-21','2026-06-27','2026-06-28'], fam_vpr_nt: ['2026-06-06','2026-06-07','2026-06-13','2026-06-14'], suite_vpr_nt: ['2026-06-06','2026-06-07'] },
+  vpbf_nt:  { dlx_vpbf_nt:  ['2026-06-06','2026-06-07','2026-06-08','2026-06-09','2026-06-13','2026-06-14','2026-06-20','2026-06-21','2026-06-27','2026-06-28'], fam_vpbf_nt: ['2026-06-06','2026-06-07','2026-06-08','2026-06-13','2026-06-14','2026-06-21'] },
+  htr_nt:   { bung_htr_nt:  ['2026-06-07','2026-06-14','2026-06-21','2026-06-28'], vbung_htr_nt: ['2026-06-06','2026-06-07','2026-06-13','2026-06-14'], villa_htr_nt: [] },
+  vpe_nt:   { dlx_vpe_nt:   ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21'], suite_vpe_nt: ['2026-06-06','2026-06-07'] },
+  vpww:     { dlx_vpww:     ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21','2026-06-27','2026-06-28'], fs_vpww: ['2026-06-07','2026-06-14','2026-06-21'], villa3_vpww: ['2026-06-06','2026-06-07'], villa4_vpww: [] },
+  vprg_dn:  { dlx_vprg_dn:  ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21'], golf_vprg_dn: ['2026-06-06','2026-06-07','2026-06-14'], villa_vprg_dn: ['2026-06-07','2026-06-14','2026-06-21'], pv_vprg_dn: ['2026-06-06','2026-06-07'] },
+  vprs_hl:  { dlx_vprs_hl:  ['2026-06-06','2026-06-07','2026-06-13','2026-06-14','2026-06-20','2026-06-21'], fam_vprs_hl: ['2026-06-07','2026-06-14','2026-06-21'], villa_vprs_hl: ['2026-06-06','2026-06-07'], suite_vprs_hl: [] },
+};
+
+// Check if a hotel has any eligible room available on a date
+function isDateAvailableForHotel(hotelId, dateStr, guestCount) {
+  const allRooms = ROOMS[hotelId] || ROOMS._default || [];
+  const eligible = allRooms.filter(r => r.capacity >= (guestCount || 1));
+  const hotelBooked = HOTEL_AVAILABILITY[hotelId] || {};
+  return eligible.some(r => !(hotelBooked[r.id] || []).includes(dateStr));
+}
+
+// Check if a specific room is available on a date
+function isRoomAvailableOn(hotelId, roomId, dateStr) {
+  return !((HOTEL_AVAILABILITY[hotelId] || {})[roomId] || []).includes(dateStr);
+}
+
+// Resolve relative date string → {checkin: Date, checkout: Date, nights: int}
+function _resolveDateRange(str) {
+  const s = (str || '').toLowerCase();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
+  const toISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  if (s.includes('cuối tuần này') || s.includes('weekend')) {
+    const dow = today.getDay(); // 0=Sun..6=Sat
+    const daysToSat = dow === 6 ? 7 : (6 - dow + 7) % 7 || 7;
+    const sat = addDays(today, daysToSat);
+    return { checkin: toISO(sat), checkout: toISO(addDays(sat,1)), nights: 1 };
+  }
+  if (s.includes('tuần tới') || s.includes('next week')) {
+    const dow = today.getDay();
+    const daysToMon = (8 - dow) % 7 || 7;
+    const mon = addDays(today, daysToMon);
+    return { checkin: toISO(mon), checkout: toISO(addDays(mon,2)), nights: 2 };
+  }
+  if (s.includes('tháng sau') || s.includes('next month')) {
+    const nm = new Date(today.getFullYear(), today.getMonth()+1, 1);
+    return { checkin: toISO(nm), checkout: toISO(addDays(nm,2)), nights: 2 };
+  }
+  // Try to parse "từ ngày X đến ngày Y" or "7/6" style
+  const rangeMatch = s.match(/(\d{1,2})[\/\-](\d{1,2}).*?(\d{1,2})[\/\-](\d{1,2})/);
+  if (rangeMatch) {
+    const y = today.getFullYear();
+    const ci = new Date(y, parseInt(rangeMatch[2])-1, parseInt(rangeMatch[1]));
+    const co = new Date(y, parseInt(rangeMatch[4])-1, parseInt(rangeMatch[3]));
+    const nights = Math.max(1, Math.round((co-ci)/86400000));
+    return { checkin: toISO(ci), checkout: toISO(co), nights };
+  }
+  const nightsMatch = s.match(/(\d+)\s*(?:đêm|ngày|nights?)/);
+  if (nightsMatch) {
+    const n = parseInt(nightsMatch[1]);
+    const ci = addDays(today, 1);
+    return { checkin: toISO(ci), checkout: toISO(addDays(ci, n)), nights: n };
+  }
+  return null;
+}
+
+// ─── CHAT BOT LOGIC ──────────────────────────────────────────────────────────
+
+// Map backend ui_state → frontend destination info for navigation action
+function _uiStateToAction(ui_state, result_data, entities) {
+  if (ui_state === 'show_destinations') {
+    const dest = entities?.destination?.toLowerCase() || '';
+    const destId = dest.includes('phú quốc') || dest.includes('phu quoc') ? 'pq'
+      : dest.includes('nha trang') ? 'nt'
+      : dest.includes('đà nẵng') || dest.includes('hội an') ? 'dn'
+      : 'pq';
+    return { type:'navigate', screen:'hotel_list', dest: destId, backendDests: result_data?.destinations };
+  }
+  if (ui_state === 'show_hotels') {
+    return { type:'navigate', screen:'hotel_list', dest: result_data?.destination_id, backendHotels: result_data?.hotels };
+  }
+  if (ui_state === 'show_change_booking') return { type:'navigate', screen:'change_booking', data: result_data };
+  if (ui_state === 'show_cancel_booking') return { type:'navigate', screen:'cancel_booking', data: result_data };
+  return null;
+}
+
+// Quick-replies based on ui_state
+function _uiStateReplies(ui_state, result_data) {
+  if (ui_state === 'ask_clarification') return result_data?.quick_replies || [];
+  if (ui_state === 'show_destinations') return [];
+  if (ui_state === 'show_hotels') return [];
+  if (ui_state === 'show_change_booking') return ['Xem đổi ngày →'];
+  if (ui_state === 'show_cancel_booking') return ['Xem hủy booking →'];
+  if (ui_state === 'show_message') return ['🏨 Tìm khách sạn', '💬 Hỏi thêm'];
+  if (ui_state === 'show_failure') return ['🔄 Thử lại', '📞 Liên hệ CSKH'];
+  return ['🏨 Tìm khách sạn', '🔄 Đổi booking', '❌ Hủy booking'];
+}
+
+// Detect correction intent on the frontend (supplement to backend classification)
+function _isCorrection(text) {
+  return /không phải|nhầm rồi|sai rồi|sửa lại|đổi lại|ý tôi là|thực ra là|\d+ người/i.test(text);
+}
+
+// Call backend /api/chat via SSE; yields thinking items then final reply object
+async function callBackendChat(message, onThinkingItem, context, history) {
+  if (!API_BASE && API_BASE !== '') {
+    // File:// mode — simple keyword fallback
+    await delay(800);
+    const lower = message.toLowerCase();
+    if (lower.includes('phú quốc') || lower.includes('phu quoc')) {
+      return { text:`Phú Quốc — lựa chọn tuyệt vời! 🏖`, ui_state:'show_destinations',
+        quick_replies:['Xem danh sách →'], action:{type:'navigate',screen:'hotel_list',dest:'pq'} };
+    }
+    if (lower.includes('muốn đổi') || lower.includes('đổi booking')) {
+      return { text:'Bạn muốn đổi booking nào? Cho tôi mã booking VNP-... nhé.', ui_state:'ask_clarification',
+        quick_replies:['Tìm booking tự động', 'Nhập mã booking'], result_data: { quick_replies: ['Tìm booking tự động','Nhập mã booking'] } };
+    }
+    return { text:`Bạn muốn làm gì, ${USER.short}?`, ui_state:'show_message',
+      quick_replies:['🏨 Tìm khách sạn','🔄 Đổi booking','❌ Hủy booking'], action:null };
+  }
+
+  const body = { message, user_id: 'demo_user' };
+  if (context && Object.keys(context).length > 0) body.context = context;
+  // Send last 10 messages as conversation history so agent has multi-turn context
+  if (history && history.length > 0) body.history = history;
+
+  const resp = await fetch(`${API_BASE}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      // Parse JSON separately — catch only parse errors, not event-handling errors
+      let ev;
+      try { ev = JSON.parse(line.slice(6)); } catch (_) { continue; }
+
+      if (ev.type === 'thinking_item') {
+        onThinkingItem && onThinkingItem(ev);
+      } else if (ev.type === 'thinking_start' || ev.type === 'thinking_progress') {
+        // Progress events — no action needed
+      } else if (ev.type === 'result') {
+        const ui = ev.ui_state;
+        const action = _uiStateToAction(ui, ev.result_data, ev.entities);
+        const replies = _uiStateReplies(ui, ev.result_data);
+        const text = ev.llm_response || (ui === 'show_destinations'
+          ? 'Tôi tìm thấy một số địa điểm phù hợp cho bạn! 🏖'
+          : 'Xong rồi! Bạn muốn làm gì tiếp theo?');
+        return { text, ui_state: ui, quick_replies: replies, action,
+          result_data: ev.result_data, entities: ev.entities };
+      } else if (ev.type === 'error') {
+        // Backend error — propagate the real message, don't swallow it
+        throw new Error(ev.message || 'Lỗi từ agent');
+      }
+    }
+  }
+  throw new Error('Stream kết thúc không có kết quả');
+}
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function StatusBar({ light = false }) {
+  const c = light ? 'rgba(255,255,255,0.75)' : '#666';
+  return (
+    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
+      padding:'10px 18px 4px', fontSize:'11px', fontWeight:600, color:c }}>
+      <span>22:01</span>
+      <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
+        <span>V</span>
+        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+          <rect x="0" y="7" width="2" height="3" fill={light?'rgba(255,255,255,0.75)':'#666'} rx="0.5"/>
+          <rect x="2.5" y="5" width="2" height="5" fill={light?'rgba(255,255,255,0.75)':'#666'} rx="0.5"/>
+          <rect x="5" y="3" width="2" height="7" fill={light?'rgba(255,255,255,0.75)':'#666'} rx="0.5"/>
+          <rect x="7.5" y="1" width="2" height="9" fill={light?'rgba(255,255,255,0.75)':'#666'} rx="0.5"/>
+          <rect x="10" y="0" width="2" height="10" fill={light?'rgba(255,255,255,0.75)':'#666'} rx="0.5"/>
+        </svg>
+        <span style={{ background: light?'rgba(255,255,255,0.3)':'#eee', color: light?'white':'#333',
+          padding:'1px 5px', borderRadius:4, fontWeight:700, border: light?'1px solid rgba(255,255,255,0.4)':'1px solid #ccc' }}>61</span>
+      </div>
+    </div>
+  );
+}
+
+function BottomNav({ active = 'home', onNav }) {
+  const items = [
+    { id:'home', emoji:'🏠', label:'Trang chủ' },
+    { id:'orders', emoji:'📋', label:'Đơn hàng' },
+    { id:'checkin', emoji:'🛏', label:'Check in' },
+    { id:'account', emoji:'👤', label:'Tài khoản' },
+    { id:'more', emoji:'···', label:'Thêm' },
+  ];
+  return (
+    <div className="bottom-nav">
+      {items.map(item => (
+        <button key={item.id} className="nav-item" onClick={() => onNav && onNav(item.id)}>
+          <span className="nav-icon">{item.emoji}</span>
+          <span className="nav-label" style={{ color: active === item.id ? '#E3A01E' : '#999', fontWeight: active===item.id?700:500 }}>
+            {item.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function BackBtn({ onBack, title = '' }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', padding:'10px 16px 8px', background:'white', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:10 }}>
+      <button onClick={onBack} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'20px', padding:'0 12px 0 0', color:'#333' }}>←</button>
+      {title && <span style={{ fontSize:'17px', fontWeight:700, color:'#111' }}>{title}</span>}
+    </div>
+  );
+}
+
+function TaDots({ rating }) {
+  const full = Math.floor(rating);
+  const colors = [1,2,3,4,5].map(i => i <= full ? '#34E0A1' : '#ddd');
+  return (
+    <div style={{ display:'inline-flex', alignItems:'center', gap:'2px' }}>
+      {colors.map((c,i) => <span key={i} className="ta-dot" style={{ background:c, border:`1.5px solid ${c==='#34E0A1'?'#00AF87':'#ccc'}` }} />)}
+    </div>
+  );
+}
+
+// ─── CHAT WIDGETS (rich message types) ───────────────────────────────────────
+
+function DestinationsWidget({ destinations, onSelect }) {
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+      {destinations.slice(0,3).map(d => (
+        <div key={d.id} style={{ background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 6px rgba(0,0,0,.1)', cursor:'pointer' }} onClick={() => onSelect(d)}>
+          <div style={{ position:'relative' }}>
+            <img src={d.image} onError={handleImgError} style={{ width:'100%', height:72, objectFit:'cover', display:'block' }} alt={d.name} />
+            <span style={{ position:'absolute', top:6, right:8, background:'rgba(0,0,0,.5)', color:'white', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:8 }}>
+              🎯 {d.match_score}%
+            </span>
+          </div>
+          <div style={{ padding:'8px 10px 10px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+              <p style={{ fontWeight:700, fontSize:13, color:'#111' }}>{d.name}</p>
+              <span style={{ fontSize:11, color:'#888' }}>⭐ {d.rating}</span>
+            </div>
+            <p style={{ fontSize:11, color:'#777', marginBottom:7, lineHeight:1.4 }}>{(d.reasons||[]).slice(0,2).join(' · ')}</p>
+            <button style={{ background:'#E3A01E', color:'white', border:'none', borderRadius:8, padding:'7px 12px', fontSize:12, fontWeight:700, width:'100%', cursor:'pointer' }}
+                    onClick={e => { e.stopPropagation(); onSelect(d); }}>
+              Xem khách sạn →
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HotelsWidget({ hotels, onSelect, byDate, checkin }) {
+  const fmtCheckin = iso => {
+    if (!iso) return '';
+    const [,m,d] = iso.split('-');
+    return `${parseInt(d)}/${parseInt(m)}`;
+  };
+  return (
+    <div style={{ display:'flex', gap:10, overflowX:'auto', paddingBottom:4, scrollbarWidth:'none' }}>
+      {hotels.map(h => (
+        <div key={h.id} style={{ minWidth:160, background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 6px rgba(0,0,0,.1)', flexShrink:0 }}>
+          <div style={{ position:'relative' }}>
+            <img src={h.image} onError={handleImgError} style={{ width:'100%', height:88, objectFit:'cover', display:'block' }} alt={h.name} />
+            {/* Availability badge */}
+            {(h.has_availability || byDate) && h.checkin && (
+              <span style={{ position:'absolute', top:6, left:6, background:'rgba(22,163,74,0.92)', color:'white', fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:8, lineHeight:'16px' }}>
+                ✓ Còn phòng {fmtCheckin(h.checkin || checkin)}
+              </span>
+            )}
+            {/* Available rooms count */}
+            {h.available_rooms_count > 0 && (
+              <span style={{ position:'absolute', bottom:5, right:6, background:'rgba(0,0,0,.45)', color:'white', fontSize:9, padding:'2px 5px', borderRadius:5 }}>
+                {h.available_rooms_count} phòng trống
+              </span>
+            )}
+          </div>
+          <div style={{ padding:'8px 10px 10px' }}>
+            <p style={{ fontWeight:700, fontSize:12, color:'#111', lineHeight:1.3, marginBottom:3 }}>{h.name.replace('Vinpearl ','VP ')}</p>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+              <span style={{ fontSize:11, color:'#888' }}>⭐ {h.rating || 4.5}</span>
+              <span style={{ fontSize:11, fontWeight:700, color:'#E3A01E' }}>{fmt(h.price || h.price_from)}</span>
+            </div>
+            <button style={{ background:'#E3A01E', color:'white', border:'none', borderRadius:8, padding:'6px', fontSize:12, fontWeight:700, width:'100%', cursor:'pointer' }}
+                    onClick={() => onSelect(h)}>
+              Chọn →
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RoomsWidget({ rooms, onSelect }) {
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+      {rooms.map(r => (
+        <div key={r.id} style={{ background:'white', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 6px rgba(0,0,0,.1)' }}>
+          <div style={{ position:'relative' }}>
+            <img src={r.image} onError={handleImgError} style={{ width:'100%', height:95, objectFit:'cover', display:'block' }} alt={r.name} />
+            <span style={{ position:'absolute', bottom:6, right:8, background:'rgba(0,0,0,.45)', color:'white', fontSize:10, padding:'2px 6px', borderRadius:5 }}>
+              🖼 1/{r.img_count}
+            </span>
+          </div>
+          <div style={{ padding:'10px 12px 12px' }}>
+            <p style={{ fontWeight:700, fontSize:13, color:'#1A56DB', marginBottom:2 }}>{r.name}</p>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+              <span style={{ fontSize:12, color:'#666' }}>👥 {r.capacity} người lớn</span>
+              <span style={{ fontWeight:800, color:'#E3A01E', fontSize:14 }}>{fmt(r.price)}<span style={{ fontSize:11, fontWeight:400, color:'#888' }}>/đêm</span></span>
+            </div>
+            <button style={{ background:'#E3A01E', color:'white', border:'none', borderRadius:9, padding:'9px', fontSize:13, fontWeight:700, width:'100%', cursor:'pointer' }}
+                    onClick={() => onSelect(r)}>
+              Chọn phòng
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UserInfoWidget({ initialInfo, onConfirm }) {
+  const [name, setName] = useState(initialInfo.name || '');
+  const [email, setEmail] = useState(initialInfo.email || '');
+  const [done, setDone] = useState(false);
+
+  const canSubmit = name.trim().length > 1 && email.includes('@');
+
+  const handleSubmit = () => {
+    if (!canSubmit || done) return;
+    setDone(true);
+    onConfirm({ ...initialInfo, name: name.trim(), email: email.trim() });
+  };
+
+  return (
+    <div style={{ background:'white', borderRadius:14, padding:'14px', boxShadow:'0 2px 8px rgba(0,0,0,.08)', width:'100%' }}>
+      <p style={{ fontWeight:700, fontSize:13, color:'#333', marginBottom:10 }}>📋 Xác nhận thông tin đặt phòng</p>
+
+      <div style={{ marginBottom:10 }}>
+        <label style={{ fontSize:11, color:'#888', display:'block', marginBottom:3 }}>Họ tên <span style={{ color:'#e53e3e' }}>*</span></label>
+        <input value={name} onChange={e => setName(e.target.value)} disabled={done}
+          style={{ width:'100%', border:`1px solid ${!name.trim() ? '#fca5a5' : '#ddd'}`, borderRadius:7, padding:'8px 10px', fontSize:13, outline:'none', background: done ? '#f9f9f9' : 'white' }}
+          placeholder="Nhập họ tên đầy đủ"
+        />
+      </div>
+      <div style={{ marginBottom:12 }}>
+        <label style={{ fontSize:11, color:'#888', display:'block', marginBottom:3 }}>Email <span style={{ color:'#e53e3e' }}>*</span></label>
+        <input value={email} onChange={e => setEmail(e.target.value)} disabled={done} type="email"
+          style={{ width:'100%', border:`1px solid ${!email.includes('@') && email ? '#fca5a5' : '#ddd'}`, borderRadius:7, padding:'8px 10px', fontSize:13, outline:'none', background: done ? '#f9f9f9' : 'white' }}
+          placeholder="your@email.com"
+        />
+      </div>
+
+      {!done ? (
+        <button onClick={handleSubmit} disabled={!canSubmit}
+          style={{ background: canSubmit ? '#E3A01E' : '#e5e5e5', color: canSubmit ? 'white' : '#aaa', border:'none', borderRadius:9, padding:'10px', fontSize:13, fontWeight:700, width:'100%', cursor: canSubmit ? 'pointer' : 'default', transition:'background .2s' }}>
+          Tiếp tục →
+        </button>
+      ) : (
+        <p style={{ color:'#34A853', fontSize:12, fontWeight:700, textAlign:'center' }}>✓ Đã xác nhận thông tin</p>
+      )}
+    </div>
+  );
+}
+
+// ── Availability Calendar Widget ─────────────────────────────────────────────
+function AvailabilityCalendar({ hotel, guestCount, preCheckin, preCheckout, onConfirm }) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
+  // Use local date parts — toISOString() is UTC and causes off-by-one in UTC+7
+  const toISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const DAY_NAMES = ['CN','T.2','T.3','T.4','T.5','T.6','T.7'];
+  const MONTH_VN = ['Th.1','Th.2','Th.3','Th.4','Th.5','Th.6','Th.7','Th.8','Th.9','Th.10','Th.11','Th.12'];
+
+  // Build 21 days starting from today
+  const days = Array.from({length:21}, (_,i) => {
+    const d = addDays(today, i);
+    const iso = toISO(d);
+    const avail = isDateAvailableForHotel(hotel?.id, iso, guestCount);
+    const isPast = d < today;
+    return { d, iso, avail, isPast, dow: d.getDay(), day: d.getDate(), month: d.getMonth()+1 };
+  });
+
+  const [checkin, setCheckin] = useState(preCheckin || null);
+  const [checkout, setCheckout] = useState(preCheckout || null);
+  const [step, setStep] = useState(preCheckin ? (preCheckout ? 'done' : 'checkout') : 'checkin');
+
+  const handleDayClick = (iso, avail) => {
+    if (!avail) return;
+    if (step === 'checkin') { setCheckin(iso); setCheckout(null); setStep('checkout'); }
+    else if (step === 'checkout') {
+      if (iso <= checkin) { setCheckin(iso); setCheckout(null); return; }
+      setCheckout(iso); setStep('done');
+    } else { setCheckin(iso); setCheckout(null); setStep('checkout'); }
+  };
+
+  const nights = checkin && checkout
+    ? Math.round((new Date(checkout) - new Date(checkin)) / 86400000)
+    : 0;
+
+  const isInRange = (iso) => checkin && checkout && iso > checkin && iso < checkout;
+  // Parse ISO "YYYY-MM-DD" as local date to avoid timezone shift
+  const fmtDate = iso => { const [,m,d] = iso.split('-'); return `${parseInt(d)}/${parseInt(m)}`; };
+
+  return (
+    <div style={{ background:'white', borderRadius:14, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,.08)', width:'100%' }}>
+      <div style={{ background:'linear-gradient(135deg,#E3A01E,#C98A12)', padding:'10px 14px' }}>
+        <p style={{ color:'white', fontWeight:700, fontSize:13, margin:0 }}>📅 Chọn ngày nhận phòng</p>
+        <p style={{ color:'rgba(255,255,255,.8)', fontSize:11, margin:'2px 0 0' }}>
+          {step === 'checkin' ? 'Tap ngày check-in' : step === 'checkout' ? `Check-in: ${fmtDate(checkin)} — Tap ngày check-out` : `${fmtDate(checkin)} → ${fmtDate(checkout)} (${nights} đêm)`}
+        </p>
+      </div>
+
+      {/* Day grid */}
+      <div style={{ padding:'10px 8px', display:'flex', flexWrap:'wrap', gap:4 }}>
+        {days.map(({ d, iso, avail, isPast, dow, day, month }) => {
+          const isCi = iso === checkin;
+          const isCo = iso === checkout;
+          const inRange = isInRange(iso);
+          const disabled = !avail || isPast;
+          const isWeekend = dow === 0 || dow === 6;
+          let bg = 'white', color = '#333', border = '1px solid #eee';
+          if (disabled)  { bg='#f5f5f5'; color='#bbb'; border='1px solid #f0f0f0'; }
+          if (inRange)   { bg='#FFF5E0'; color='#C98A12'; border='1px solid #F5D78C'; }
+          if (isCi||isCo){ bg='#E3A01E'; color='white'; border='1px solid #E3A01E'; }
+          return (
+            <div key={iso} onClick={() => handleDayClick(iso, !disabled)}
+              style={{ width:'calc(14.28% - 4px)', minWidth:36, aspectRatio:'1', display:'flex', flexDirection:'column',
+                alignItems:'center', justifyContent:'center', borderRadius:8, cursor: disabled?'not-allowed':'pointer',
+                background:bg, border, transition:'all .15s', boxSizing:'border-box', padding:2 }}>
+              <span style={{ fontSize:8, color: disabled?'#ccc' : isWeekend?'#E3A01E':'#999', fontWeight:500, lineHeight:1 }}>
+                {DAY_NAMES[dow]}
+              </span>
+              <span style={{ fontSize:12, fontWeight: (isCi||isCo)?800:600, color, lineHeight:1.3 }}>{day}</span>
+              {month !== days[0].month && <span style={{ fontSize:7, color:'#aaa', lineHeight:1 }}>/{month}</span>}
+              {!disabled && <span style={{ width:4, height:4, borderRadius:'50%', background: (isCi||isCo)?'rgba(255,255,255,.7)':'#4CAF50', marginTop:1 }} />}
+              {disabled && !isPast && <span style={{ fontSize:7, color:'#ddd', lineHeight:1 }}>Full</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div style={{ display:'flex', gap:10, padding:'0 12px 8px', fontSize:10, color:'#888', alignItems:'center' }}>
+        <span>🟢 Còn phòng</span><span>⬜ Hết phòng</span>{checkin&&checkout&&<span style={{color:'#E3A01E',fontWeight:700}}>🟡 Đã chọn</span>}
+      </div>
+
+      {/* Confirm button */}
+      {step === 'done' && (
+        <div style={{ padding:'0 12px 12px' }}>
+          <button onClick={() => onConfirm(checkin, checkout, nights)}
+            style={{ width:'100%', background:'#E3A01E', color:'white', border:'none', borderRadius:10,
+              padding:'11px', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+            ✓ Xác nhận {fmtDate(checkin)} → {fmtDate(checkout)} ({nights} đêm)
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BookingConfirmWidget({ hotel, room, info, onConfirm, onCancel }) {
+  const [confirming, setConfirming] = useState(false);
+  const [done, setDone] = useState(false);
+  const [payment, setPayment] = useState('vnpay');
+
+  const PAYMENT_METHODS = [
+    { id:'vnpay',  label:'VNPay',                     emoji:'💳', desc:'Thanh toán qua cổng VNPay' },
+    { id:'credit', label:'Thẻ tín dụng / ghi nợ',     emoji:'🏦', desc:'Visa, Mastercard, JCB, Napas' },
+    { id:'bank',   label:'Chuyển khoản ngân hàng',     emoji:'🏛', desc:'Tất cả ngân hàng Việt Nam' },
+    { id:'momo',   label:'Ví MoMo',                   emoji:'💜', desc:'Thanh toán nhanh với MoMo' },
+  ];
+
+  const handleConfirm = async () => {
+    if (done) return;
+    setConfirming(true);
+    await onConfirm(payment);
+    setDone(true);
+  };
+
+  return (
+    <div style={{ background:'white', borderRadius:14, overflow:'hidden', boxShadow:'0 2px 10px rgba(0,0,0,.1)', width:'100%' }}>
+      <div style={{ position:'relative' }}>
+        <img src={hotel?.image} onError={handleImgError} style={{ width:'100%', height:95, objectFit:'cover', display:'block' }} alt="" />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg,transparent 40%,rgba(0,0,0,.55))' }} />
+        <p style={{ position:'absolute', bottom:8, left:12, color:'white', fontWeight:700, fontSize:13 }}>{hotel?.name}</p>
+      </div>
+      <div style={{ padding:'12px' }}>
+        {(() => {
+          const guests = info?.guests || 2;
+          const roomCap = room?.capacity || Infinity;
+          const displayGuests = guests > roomCap ? roomCap : guests;
+          return [
+            ['📅 Check-in', info?.checkin ? info.checkin.split('-').reverse().slice(0,2).reverse().join('/') + '/' + info.checkin.split('-')[0] : '—'],
+            ['📅 Check-out', info?.checkout ? info.checkout.split('-').reverse().slice(0,2).reverse().join('/') + '/' + info.checkout.split('-')[0] : '—'],
+            ['🛏 Phòng', room?.name],
+            ['👥 Khách', `${displayGuests} người${guests > roomCap ? ` (tối đa ${roomCap}/phòng)` : ''}`],
+            ['📧 Email', info?.email],
+            ['👤 Tên', info?.name],
+          ];
+        })().map(([k, v]) => (
+          <div key={k} style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:5 }}>
+            <span style={{ fontSize:12, color:'#888', flexShrink:0 }}>{k}</span>
+            <span style={{ fontSize:12, fontWeight:600, color:'#333', textAlign:'right', marginLeft:8, wordBreak:'break-word', maxWidth:'60%' }}>{v}</span>
+          </div>
+        ))}
+        <hr style={{ border:'none', borderTop:'1px dashed #eee', margin:'8px 0' }} />
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+          <span style={{ fontWeight:700, fontSize:13, color:'#333' }}>Tổng tiền</span>
+          <span style={{ fontWeight:900, fontSize:16, color:'#E3A01E' }}>{fmt(room?.price)}</span>
+        </div>
+
+        {/* Payment method selector */}
+        {!done && (
+          <div style={{ marginBottom:12 }}>
+            <p style={{ fontSize:12, fontWeight:700, color:'#555', marginBottom:7 }}>💳 Phương thức thanh toán</p>
+            {PAYMENT_METHODS.map(pm => (
+              <div key={pm.id} onClick={() => setPayment(pm.id)}
+                style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 10px', marginBottom:5,
+                  border:`1.5px solid ${payment === pm.id ? '#E3A01E' : '#eee'}`,
+                  borderRadius:9, background: payment === pm.id ? '#FFF8EE' : 'white', cursor:'pointer', transition:'border-color .15s' }}>
+                <span style={{ fontSize:20, flexShrink:0 }}>{pm.emoji}</span>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:12, fontWeight:700, color: payment === pm.id ? '#C98A12' : '#333', margin:0 }}>{pm.label}</p>
+                  <p style={{ fontSize:10, color:'#999', margin:0 }}>{pm.desc}</p>
+                </div>
+                <div style={{ width:17, height:17, borderRadius:'50%', border:`2px solid ${payment === pm.id ? '#E3A01E' : '#ddd'}`,
+                  background: payment === pm.id ? '#E3A01E' : 'white', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {payment === pm.id && <span style={{ color:'white', fontSize:9, fontWeight:900, lineHeight:1 }}>✓</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!done ? (
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={handleConfirm} disabled={confirming}
+              style={{ flex:3, background: confirming ? '#f0c060' : '#E3A01E', color:'white', border:'none', borderRadius:10, padding:'11px', fontSize:13, fontWeight:700, cursor: confirming ? 'default' : 'pointer', transition:'background .2s' }}>
+              {confirming ? '⏳ Đang xử lý...' : '✓ Xác nhận đặt phòng'}
+            </button>
+            <button onClick={onCancel}
+              style={{ flex:1, background:'#f5f5f5', color:'#666', border:'none', borderRadius:10, padding:'11px', fontSize:13, cursor:'pointer' }}>
+              Hủy
+            </button>
+          </div>
+        ) : (
+          <p style={{ color:'#E3A01E', fontSize:12, fontWeight:700, textAlign:'center' }}>⏳ Đang xác nhận...</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BookingSuccessWidget({ bookingRef, hotel, room, email, paymentMethod }) {
+  const pmLabel = { vnpay:'VNPay', credit:'Thẻ tín dụng', bank:'Chuyển khoản', momo:'Ví MoMo' }[paymentMethod] || 'VNPay';
+  return (
+    <div style={{ background:'#f0fdf4', border:'1.5px solid #86efac', borderRadius:14, padding:'16px', textAlign:'center', width:'100%' }}>
+      <div style={{ fontSize:42, marginBottom:8 }}>✅</div>
+      <p style={{ fontWeight:800, fontSize:15, color:'#166534', marginBottom:4 }}>Đặt phòng thành công!</p>
+      <div style={{ background:'white', borderRadius:10, padding:'10px 12px', margin:'10px 0', textAlign:'left' }}>
+        <p style={{ fontSize:12, fontWeight:700, color:'#166534', marginBottom:3 }}>Mã booking: {bookingRef}</p>
+        <p style={{ fontSize:12, color:'#555', marginBottom:1 }}>{hotel?.name}</p>
+        <p style={{ fontSize:12, color:'#555', marginBottom:1 }}>{room?.name} · 05/06 – 06/06/2026</p>
+        <p style={{ fontSize:12, color:'#888' }}>Thanh toán: {pmLabel}</p>
+      </div>
+      <p style={{ fontSize:11, color:'#888', marginBottom:2 }}>Email xác nhận đã gửi tới</p>
+      <p style={{ fontSize:12, fontWeight:700, color:'#166534' }}>{email}</p>
+    </div>
+  );
+}
+
+// FAILURE PATH widget — escalation to CSKH
+function FailureWidget({ message, reason, cskh, onRetry }) {
+  const isBookingNotFound = reason === 'booking_not_found';
+  const isPolicyNotFound  = reason === 'policy_not_found';
+  return (
+    <div style={{ background:'#fff5f5', border:'1.5px solid #feb2b2', borderRadius:14, padding:'14px', width:'100%' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+        <span style={{ fontSize:22 }}>{isBookingNotFound ? '🔍' : isPolicyNotFound ? '📋' : '⚠️'}</span>
+        <p style={{ fontWeight:700, fontSize:13, color:'#c53030' }}>
+          {isBookingNotFound ? 'Không tìm thấy booking' : isPolicyNotFound ? 'Chính sách chưa có trong hệ thống' : 'Không tìm thấy dữ liệu'}
+        </p>
+      </div>
+
+      {message && (
+        <p style={{ fontSize:13, color:'#555', lineHeight:1.5, marginBottom:12 }}>{message}</p>
+      )}
+
+      <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+        {cskh?.phone && (
+          <a href={`tel:${cskh.phone}`} style={{ display:'flex', alignItems:'center', gap:8, background:'white', border:'1px solid #feb2b2', borderRadius:9, padding:'9px 12px', textDecoration:'none', cursor:'pointer' }}>
+            <span style={{ fontSize:16 }}>📞</span>
+            <div>
+              <p style={{ fontSize:12, fontWeight:700, color:'#c53030', margin:0 }}>Gọi CSKH Vinpearl</p>
+              <p style={{ fontSize:11, color:'#888', margin:0 }}>{cskh.phone} — Miễn phí 24/7</p>
+            </div>
+          </a>
+        )}
+        {cskh?.chat_url && (
+          <a href={cskh.chat_url} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:8, background:'white', border:'1px solid #feb2b2', borderRadius:9, padding:'9px 12px', textDecoration:'none', cursor:'pointer' }}>
+            <span style={{ fontSize:16 }}>💬</span>
+            <div>
+              <p style={{ fontSize:12, fontWeight:700, color:'#c53030', margin:0 }}>Chat với nhân viên</p>
+              <p style={{ fontSize:11, color:'#888', margin:0 }}>vinpearlresort.com</p>
+            </div>
+          </a>
+        )}
+        {cskh?.policy_url && isPolicyNotFound && (
+          <a href={cskh.policy_url} target="_blank" rel="noreferrer" style={{ display:'flex', alignItems:'center', gap:8, background:'white', border:'1px solid #feb2b2', borderRadius:9, padding:'9px 12px', textDecoration:'none', cursor:'pointer' }}>
+            <span style={{ fontSize:16 }}>🔗</span>
+            <div>
+              <p style={{ fontSize:12, fontWeight:700, color:'#c53030', margin:0 }}>Xem chính sách đầy đủ</p>
+              <p style={{ fontSize:11, color:'#888', margin:0 }}>vinpearl.com/chinh-sach</p>
+            </div>
+          </a>
+        )}
+        <button onClick={onRetry} style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, background:'#fff5f5', border:'1px solid #feb2b2', borderRadius:9, padding:'8px 12px', cursor:'pointer', fontSize:12, color:'#c53030', fontWeight:600 }}>
+          🔄 Thử lại với thông tin khác
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── CHAT WIDGET (main) ───────────────────────────────────────────────────────
+function ChatWidget({ onClose, onNavigate }) {
+  const idRef = useRef(10);
+  const nextId = () => idRef.current++;
+
+  const [messages, setMessages] = useState([
+    { id:1, from:'bot', type:'text', text:`Xin chào, ${USER.short}! 👋`, time:new Date() },
+    { id:2, from:'bot', type:'text', text:`Xin chào! Tôi là ${APP_NAME} — trợ lý AI đặt phòng Vinpearl.\nTôi có thể giúp bạn tìm phòng, đổi / hủy booking, hoặc trả lời câu hỏi.`,
+      quick_replies:['🏨 Tìm khách sạn','🔄 Đổi booking','❌ Hủy booking'] },
+  ]);
+  const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
+  const [pendingReplies, setPendingReplies] = useState(['🏨 Tìm khách sạn','🔄 Đổi booking','❌ Hủy booking']);
+
+  // Booking flow state
+  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [guestCount, setGuestCount] = useState(2);
+  const [awaitingGuestCount, setAwaitingGuestCount] = useState(false);
+  const [awaitingDatePick, setAwaitingDatePick] = useState(false);
+  const [checkinDate, setCheckinDate] = useState(null);   // 'YYYY-MM-DD'
+  const [checkoutDate, setCheckoutDate] = useState(null); // 'YYYY-MM-DD'
+  const [bookingInfo, setBookingInfo] = useState({ name: USER.first_name, email: USER.email, guests: 2 });
+  // Correction flow: remember last search entities so backend can merge on correction
+  const [lastEntities, setLastEntities] = useState({});
+  // Clarify flow: what was the last clarify question asking for?
+  // 'destination' | 'booking' | null
+  const [clarifyContext, setClarifyContext] = useState(null);
+  // Booking ref tracking: pass to backend on change/cancel so it can validate
+  const savedBookingRef = useRef(null);
+
+  const bodyRef = useRef(null);
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [messages, typing]);
+
+  const push = (msg) => setMessages(prev => [...prev, { id: nextId(), time: new Date(), ...msg }]);
+
+  // Destination name → object lookup (for bypassing backend on clarify answers)
+  const DEST_LOOKUP = {
+    'phú quốc': { id:'pq', name:'Phú Quốc', image:HOTELS.pq?.[0]?.image, match_score:95, rating:4.8, reasons:['Biển đẹp nhất miền Nam','Lý tưởng cho gia đình'] },
+    'phu quoc': { id:'pq', name:'Phú Quốc', image:HOTELS.pq?.[0]?.image, match_score:95, rating:4.8, reasons:['Biển đẹp nhất miền Nam','Lý tưởng cho gia đình'] },
+    'nha trang': { id:'nt', name:'Nha Trang', image:HOTELS.nt?.[0]?.image, match_score:90, rating:4.6, reasons:['Vịnh biển xanh đẹp','Nhiều hoạt động lặn biển'] },
+    'hội an': { id:'dn', name:'Hội An', image:HOTELS.dn?.[0]?.image, match_score:88, rating:4.8, reasons:['Phố cổ UNESCO','Sân golf & Biển An Bàng'] },
+    'hoi an': { id:'dn', name:'Hội An', image:HOTELS.dn?.[0]?.image, match_score:88, rating:4.8, reasons:['Phố cổ UNESCO','Sân golf & Biển An Bàng'] },
+    'đà nẵng': { id:'dn', name:'Hội An', image:HOTELS.dn?.[0]?.image, match_score:85, rating:4.8, reasons:['Gần Đà Nẵng','Phố cổ UNESCO'] },
+    'da nang': { id:'dn', name:'Hội An', image:HOTELS.dn?.[0]?.image, match_score:85, rating:4.8, reasons:['Gần Đà Nẵng','Phố cổ UNESCO'] },
+    'hạ long': { id:'hl', name:'Hạ Long', image:HOTELS.hl?.[0]?.image, match_score:88, rating:4.7, reasons:['Di sản thiên nhiên thế giới','Vịnh đảo vôi hùng vĩ'] },
+    'ha long': { id:'hl', name:'Hạ Long', image:HOTELS.hl?.[0]?.image, match_score:88, rating:4.7, reasons:['Di sản thiên nhiên thế giới','Vịnh đảo vôi hùng vĩ'] },
+    'hà tĩnh': { id:'ht', name:'Hà Tĩnh', image:HOTELS.ht?.[0]?.image, match_score:80, rating:4.4, reasons:['Biển Cửa Sót hoang sơ','Yên tĩnh & gần gũi thiên nhiên'] },
+    'ha tinh': { id:'ht', name:'Hà Tĩnh', image:HOTELS.ht?.[0]?.image, match_score:80, rating:4.4, reasons:['Biển Cửa Sót hoang sơ','Yên tĩnh & gần gũi thiên nhiên'] },
+    'nghệ an': { id:'na', name:'Nghệ An', image:HOTELS.na?.[0]?.image, match_score:79, rating:4.4, reasons:['Biển Cửa Hội xinh đẹp','Gần thành phố Vinh'] },
+    'nghe an': { id:'na', name:'Nghệ An', image:HOTELS.na?.[0]?.image, match_score:79, rating:4.4, reasons:['Biển Cửa Hội xinh đẹp','Gần thành phố Vinh'] },
+    'bắc ninh': { id:'bn', name:'Bắc Ninh', image:HOTELS.bn?.[0]?.image, match_score:75, rating:4.3, reasons:['Gần Hà Nội','Tiện công tác & nghỉ dưỡng'] },
+    'bac ninh': { id:'bn', name:'Bắc Ninh', image:HOTELS.bn?.[0]?.image, match_score:75, rating:4.3, reasons:['Gần Hà Nội','Tiện công tác & nghỉ dưỡng'] },
+  };
+
+  // ── Flow handlers ─────────────────────────────────────────────────────────
+
+  const handleDestSelect = (dest) => {
+    push({ from:'user', type:'text', text:`Chọn ${dest.name}` });
+    setPendingReplies([]);
+    const hotels = HOTELS[dest.id] || HOTELS.pq;
+    setTimeout(() => {
+      push({ from:'bot', type:'hotels', text:`Các khách sạn Vinpearl tại ${dest.name} 🏨`, hotels });
+    }, 400);
+  };
+
+  const handleHotelSelect = (hotel) => {
+    setSelectedHotel(hotel);
+    push({ from:'user', type:'text', text:`Chọn ${hotel.name}` });
+    setPendingReplies([]);
+
+    // If guest count already known from search entities → skip question
+    const knownGuests = lastEntities.guest_count ? parseInt(lastEntities.guest_count) : 0;
+    const knownDateStr  = lastEntities.date_range || lastEntities.date || lastEntities.checkin || '';
+    const resolvedDates = knownDateStr ? _resolveDateRange(knownDateStr) : null;
+
+    const showCalendar = (guests) => {
+      setAwaitingDatePick(true);
+      setAwaitingGuestCount(false);
+      if (resolvedDates) {
+        setCheckinDate(resolvedDates.checkin);
+        setCheckoutDate(resolvedDates.checkout);
+      }
+      setTimeout(() => {
+        push({ from:'bot', type:'availability',
+          text: `📅 Chọn ngày cho ${guests} người tại ${hotel.name.split(' ').slice(0,4).join(' ')}`,
+          hotel, guestCount: guests,
+          preCheckin: resolvedDates?.checkin || null,
+          preCheckout: resolvedDates?.checkout || null });
+      }, 400);
+    };
+
+    if (knownGuests > 0) {
+      setGuestCount(knownGuests);
+      setBookingInfo(prev => ({ ...prev, guests: knownGuests }));
+      showCalendar(knownGuests);
+    } else {
+      setGuestCount(2);
+      setAwaitingGuestCount(true);
+      setTimeout(() => {
+        push({ from:'bot', type:'text', text:`Tuyệt! Bạn đi bao nhiêu người để tôi gợi ý phòng phù hợp nhất? 👥` });
+        setPendingReplies(['1 người', '2 người', '3 người', '4 người', '5-6 người', '7+ người']);
+      }, 400);
+    }
+  };
+
+  const handleGuestCountSelect = (count) => {
+    setGuestCount(count);
+    setBookingInfo(prev => ({ ...prev, guests: count }));
+    setAwaitingGuestCount(false);
+    setPendingReplies([]);
+
+    const knownDateStr  = lastEntities.date_range || lastEntities.date || lastEntities.checkin || '';
+    const resolvedDates = knownDateStr ? _resolveDateRange(knownDateStr) : null;
+    if (resolvedDates) {
+      setCheckinDate(resolvedDates.checkin);
+      setCheckoutDate(resolvedDates.checkout);
+    }
+
+    setTimeout(() => {
+      push({ from:'bot', type:'availability',
+        text: `📅 Chọn ngày cho ${count} người tại ${(selectedHotel?.name||'').split(' ').slice(0,4).join(' ')}`,
+        hotel: selectedHotel, guestCount: count,
+        preCheckin: resolvedDates?.checkin || null,
+        preCheckout: resolvedDates?.checkout || null });
+      setAwaitingDatePick(true);
+    }, 400);
+  };
+
+  const handleDateConfirm = (checkin, checkout, nights) => {
+    setCheckinDate(checkin);
+    setCheckoutDate(checkout);
+    setAwaitingDatePick(false);
+    push({ from:'user', type:'text', text:`Check-in ${checkin.split('-').slice(1).reverse().join('/')} → Check-out ${checkout.split('-').slice(1).reverse().join('/')} (${nights} đêm)` });
+    setPendingReplies([]);
+    const allRooms = ROOMS[selectedHotel?.id] || ROOMS._default || [];
+    // Filter by capacity AND availability on checkin date
+    const eligible = allRooms.filter(r => r.capacity >= guestCount);
+    const available = eligible.filter(r => isRoomAvailableOn(selectedHotel?.id, r.id, checkin));
+    const rooms = available.length > 0 ? available : (eligible.length > 0 ? eligible : allRooms);
+    setTimeout(() => {
+      push({ from:'bot', type:'rooms',
+        text: `Phòng còn trống cho ${guestCount} người (${checkin.split('-').slice(1).reverse().join('/')} – ${checkout.split('-').slice(1).reverse().join('/')}) 🛏`,
+        rooms });
+    }, 400);
+  };
+
+  const handleRoomSelect = (room) => {
+    setSelectedRoom(room);
+    push({ from:'user', type:'text', text:`Chọn ${room.name}` });
+    setPendingReplies([]);
+    // Embed dates into bookingInfo so BookingConfirmWidget can display them
+    const info = { ...bookingInfo, checkin: checkinDate, checkout: checkoutDate, guests: guestCount };
+    setBookingInfo(info);
+    setTimeout(() => {
+      push({ from:'bot', type:'user_info', text:'Vui lòng điền thông tin để hoàn tất đặt phòng:',
+        info });
+    }, 400);
+  };
+
+  const handleInfoConfirm = (info) => {
+    setBookingInfo(info);
+    push({ from:'user', type:'text', text:`${info.name} · ${info.email}` });
+    setTimeout(() => {
+      push({ from:'bot', type:'booking_confirm', text:'Xác nhận đặt phòng của bạn:',
+        hotel: selectedHotel, room: selectedRoom, info });
+    }, 400);
+  };
+
+  const handleBookingConfirm = async (paymentMethod) => {
+    const ref = 'VNP-' + new Date().getFullYear() + '-' + (Math.floor(Math.random() * 9000) + 1000);
+    savedBookingRef.current = ref;   // save so future change/cancel can reference it
+    // Optionally notify backend
+    if (API_BASE && API_BASE !== '') {
+      try {
+        await fetch(`${API_BASE}/api/book`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            hotel_id: selectedHotel?.id,
+            room_id: selectedRoom?.id,
+            checkin: '2026-06-05',
+            checkout: '2026-06-06',
+            guests: bookingInfo.guests,
+            user_name: bookingInfo.name,
+            email: bookingInfo.email,
+            payment_method: paymentMethod || 'vnpay',
+          }),
+        });
+      } catch(_) {}
+    }
+    await delay(700);
+    push({ from:'bot', type:'booking_success', text:'',
+      bookingRef: ref, hotel: selectedHotel, room: selectedRoom, email: bookingInfo.email, paymentMethod });
+    setPendingReplies(['🏠 Về trang chủ']);
+  };
+
+  const handleBookingCancel = () => {
+    push({ from:'bot', type:'text', text:'Đã hủy. Bạn muốn chọn phòng khác không?',
+      quick_replies: ['🔄 Chọn phòng khác', '🏠 Về trang chủ'] });
+    setPendingReplies(['🔄 Chọn phòng khác', '🏠 Về trang chủ']);
+  };
+
+  // ── Main send ─────────────────────────────────────────────────────────────
+
+  const sendMessage = async (text) => {
+    if (!text.trim() || typing) return;
+
+    // ── Clarify destination shortcut: bypass backend entirely ─────────────────
+    // When bot asked "where do you want to go?" and user picks a destination
+    if (clarifyContext === 'destination') {
+      const destObj = DEST_LOOKUP[text.toLowerCase().trim()];
+      if (destObj) {
+        setClarifyContext(null);
+        setInput('');
+        push({ from:'user', type:'text', text });
+        setPendingReplies([]);
+        setTyping(true);
+        await delay(400);
+        setTyping(false);
+        handleDestSelect(destObj);
+        return;
+      }
+    }
+
+    // ── Guest count shortcut: when bot asked "đi bao nhiêu người?" ────────────
+    if (awaitingGuestCount && selectedHotel) {
+      const guestMap = { '1 người':1, '2 người':2, '3 người':3, '4 người':4, '5-6 người':5, '7+ người':7 };
+      const count = guestMap[text] ?? parseInt((text.match(/(\d+)/)||[])[1] || '0');
+      if (count > 0) {
+        setInput('');
+        push({ from:'user', type:'text', text });
+        handleGuestCountSelect(count);
+        return;
+      }
+    }
+
+    setInput('');
+    push({ from:'user', type:'text', text });
+    setPendingReplies([]);
+    setTyping(true);
+    setInputDisabled(true);
+
+    // Build context (booking_ref for change/cancel validation)
+    const context = {
+      ...(savedBookingRef.current ? { booking_ref: savedBookingRef.current } : {}),
+    };
+
+    // Build conversation history — last 10 text messages for multi-turn context
+    const history = messages
+      .filter(m => m.type === 'text' && (m.from === 'user' || m.from === 'bot'))
+      .slice(-10)
+      .map(m => ({ role: m.from === 'user' ? 'user' : 'assistant', content: m.text || '' }))
+      .filter(m => m.content.length > 0);
+
+    try {
+      const reply = await callBackendChat(text, null, context, history);
+      setTyping(false);
+      setInputDisabled(false);
+
+      const ui = reply.ui_state;
+
+      if (ui === 'show_hotels' && reply.result_data?.hotels?.length) {
+        // Hotels already filtered (by date or destination) → skip destination step
+        if (reply.entities) setLastEntities(reply.entities);
+        setClarifyContext(null);
+        const rd = reply.result_data;
+        const byDate = !!rd.by_date;   // true = LLM used search_hotels_by_date
+        const hotels = rd.hotels.map(h => ({
+          id: h.id, name: h.name, location: h.location || rd.destination || h.name,
+          rating: h.rating || 4.5,
+          price: h.price_from || h.price || h.price_per_night,
+          image: h.image || 'https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=700&q=80',
+          attributes: h.attributes || [],
+          // Date availability badge
+          checkin: h.checkin || rd.checkin,
+          checkout: h.checkout || rd.checkout,
+          available_rooms_count: h.available_rooms_count,
+          has_availability: h.has_availability || byDate,
+          nights: h.nights || rd.nights || 1,
+        }));
+        // Only show intro text if short — skip if LLM generated a long markdown list
+        const introText = stripMd(reply.text || '');
+        if (introText && introText.split('\n')[0].length <= 100) {
+          push({ from:'bot', type:'text', text: introText.split('\n')[0] });
+        }
+        setTimeout(() => {
+          push({ from:'bot', type:'hotels',
+            text: byDate ? `Các khách sạn còn trống ngày ${rd.checkin} 📅` : '',
+            hotels, byDate, checkin: rd.checkin });
+        }, 300);
+        setTimeout(() => setPendingReplies(['🔄 Tìm ngày khác', '🔄 Đổi địa điểm', '💬 Hỏi thêm']), 350);
+      } else if (ui === 'show_destinations' && reply.result_data?.destinations?.length) {
+        // Save entities for potential correction next turn
+        if (reply.entities) setLastEntities(reply.entities);
+        setClarifyContext(null);
+        const destIntro = stripMd(reply.text || '');
+        if (destIntro && destIntro.split('\n')[0].length <= 100) {
+          push({ from:'bot', type:'text', text: destIntro.split('\n')[0] });
+        }
+        setTimeout(() => {
+          push({ from:'bot', type:'destinations', text:'', destinations: reply.result_data.destinations });
+        }, 300);
+        // Subtle correction quick-replies after showing destinations
+        setTimeout(() => setPendingReplies(['🔄 Sửa: Nhiều người hơn', '🔄 Sửa: Địa điểm khác', '💬 Hỏi thêm']), 350);
+      } else if (ui === 'ask_clarification') {
+        // LOW-CONFIDENCE PATH: show the question + quick replies
+        const qr = reply.result_data?.quick_replies || reply.quick_replies || [];
+        push({ from:'bot', type:'text', text: reply.text });
+        // Track what the bot is asking for so next user input can short-circuit
+        const destReplies = ['Phú Quốc','Nha Trang','Đà Nẵng','Hạ Long'];
+        if (qr.some(r => destReplies.includes(r))) {
+          setClarifyContext('destination');
+        } else if (qr.includes('Tìm booking tự động') || qr.includes('Nhập mã booking')) {
+          setClarifyContext('booking');
+        }
+        if (qr.length > 0) setPendingReplies(qr);
+        else setPendingReplies([]);
+      } else if (ui === 'show_failure') {
+        // FAILURE PATH: show FailureWidget
+        push({ from:'bot', type:'text', text: reply.text });
+        setTimeout(() => {
+          push({ from:'bot', type:'failure',
+            reason: reply.result_data?.failure_reason,
+            cskh: reply.result_data?.cskh || { phone:'1800 1234', chat_url:'#', policy_url:'#' },
+          });
+        }, 300);
+        setPendingReplies([]);
+      } else {
+        // Save entities from QA/other responses too (for multi-turn context like "có" after "tìm phòng không?")
+        if (reply.entities && Object.keys(reply.entities).length > 0) setLastEntities(reply.entities);
+        push({ from:'bot', type:'text', text: reply.text, quick_replies: reply.quick_replies });
+        setPendingReplies(reply.quick_replies || []);
+      }
+    } catch(e) {
+      setTyping(false);
+      setInputDisabled(false);
+      push({ from:'bot', type:'text', text:`Xin lỗi, không kết nối được backend. (${e.message})`, quick_replies:['Thử lại'] });
+      setPendingReplies(['Thử lại']);
+    }
+  };
+
+  const fmtTime = d => {
+    const h = d.getHours(), m = d.getMinutes();
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  };
+
+  // ── Render each message ───────────────────────────────────────────────────
+
+  const renderContent = (msg) => {
+    switch(msg.type) {
+      case 'destinations':
+        return <DestinationsWidget destinations={msg.destinations} onSelect={handleDestSelect} />;
+      case 'hotels':
+        return (
+          <div>
+            {msg.text && <p style={{ fontSize:13, color:'#333', marginBottom:8, lineHeight:1.4 }}>{msg.text}</p>}
+            <HotelsWidget hotels={msg.hotels} onSelect={handleHotelSelect} byDate={msg.byDate} checkin={msg.checkin} />
+          </div>
+        );
+      case 'availability':
+        return (
+          <div>
+            {msg.text && <p style={{ fontSize:13, color:'#333', marginBottom:8, lineHeight:1.4 }}>{msg.text}</p>}
+            <AvailabilityCalendar
+              hotel={msg.hotel} guestCount={msg.guestCount}
+              preCheckin={msg.preCheckin} preCheckout={msg.preCheckout}
+              onConfirm={handleDateConfirm} />
+          </div>
+        );
+      case 'rooms':
+        return (
+          <div>
+            {msg.text && <p style={{ fontSize:13, color:'#333', marginBottom:8, lineHeight:1.4 }}>{msg.text}</p>}
+            <RoomsWidget rooms={msg.rooms} onSelect={handleRoomSelect} />
+          </div>
+        );
+      case 'user_info':
+        return (
+          <div>
+            {msg.text && <p style={{ fontSize:13, color:'#333', marginBottom:8 }}>{msg.text}</p>}
+            <UserInfoWidget initialInfo={msg.info} onConfirm={handleInfoConfirm} />
+          </div>
+        );
+      case 'booking_confirm':
+        return (
+          <div>
+            {msg.text && <p style={{ fontSize:13, color:'#333', marginBottom:8 }}>{msg.text}</p>}
+            <BookingConfirmWidget
+              hotel={msg.hotel} room={msg.room} info={msg.info}
+              onConfirm={handleBookingConfirm}
+              onCancel={handleBookingCancel}
+            />
+          </div>
+        );
+      case 'booking_success':
+        return <BookingSuccessWidget bookingRef={msg.bookingRef} hotel={msg.hotel} room={msg.room} email={msg.email} paymentMethod={msg.paymentMethod} />;
+      case 'failure':
+        return <FailureWidget message={msg.text} reason={msg.reason} cskh={msg.cskh}
+          onRetry={() => { setPendingReplies(['🏨 Tìm khách sạn','🔄 Đổi booking','❌ Hủy booking']); }} />;
+      default:
+        return <div className="bubble-bot" style={{ whiteSpace:'pre-line' }}>{stripMd(msg.text)}</div>;
+    }
+  };
+
+  const isWideType = (t) => ['destinations','hotels','rooms','user_info','booking_confirm','booking_success','failure'].includes(t);
+
+  let lastDate = '';
+  const getDateLabel = (d) => {
+    const label = d.toDateString() === new Date().toDateString() ? 'Hôm nay' : d.toLocaleDateString('vi-VN');
+    if (label !== lastDate) { lastDate = label; return label; }
+    return null;
+  };
+
+  return (
+    <div className="chat-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="chat-panel">
+        {/* Header */}
+        <div className="chat-header">
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#555', paddingRight:4 }}>←</button>
+          <div style={{ width:40, height:40, borderRadius:'50%', background:'white', border:'1.5px solid #eee', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, overflow:'hidden', padding:4 }}>
+            <img src={VINPEARL_LOGO} alt="Vinpearl" style={{ width:'100%', height:'100%', objectFit:'contain' }} />
+          </div>
+          <div style={{ flex:1 }}>
+            <p style={{ fontSize:15, fontWeight:700, color:'#111' }}>{APP_NAME}</p>
+            <p style={{ fontSize:11, color:'#34A853', fontWeight:600 }}>● Trực tuyến</p>
+          </div>
+          <button style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#888' }}>⋮</button>
+        </div>
+
+        {/* Messages */}
+        <div className="chat-body" ref={bodyRef}>
+          {messages.map((msg, idx) => {
+            const dateLabel = msg.time ? getDateLabel(msg.time) : null;
+            const showVALabel = msg.from === 'bot' && (idx === 0 || messages[idx-1]?.from !== 'bot');
+            const wide = msg.from === 'bot' && isWideType(msg.type);
+            return (
+              <div key={msg.id}>
+                {dateLabel && (
+                  <div style={{ textAlign:'center', fontSize:11, color:'#bbb', margin:'6px 0 10px', fontWeight:600 }}>{dateLabel}</div>
+                )}
+                {msg.from === 'bot' ? (
+                  <div style={{ marginBottom:12 }}>
+                    {showVALabel && <p style={{ fontSize:11, color:'#999', fontWeight:600, marginBottom:4 }}>VinpearlAI</p>}
+                    <div style={{ maxWidth: wide ? '96%' : '84%' }}>
+                      {renderContent(msg)}
+                    </div>
+                    {msg.time && <p style={{ fontSize:10, color:'#bbb', marginTop:3 }}>{fmtTime(msg.time)}</p>}
+                  </div>
+                ) : (
+                  <div style={{ marginBottom:12 }}>
+                    <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                      <div className="bubble-user">{msg.text}</div>
+                    </div>
+                    {msg.time && <p style={{ fontSize:10, color:'#bbb', marginTop:3, textAlign:'right' }}>{fmtTime(msg.time)}</p>}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {typing && (
+            <div style={{ marginBottom:12 }}>
+              <p style={{ fontSize:11, color:'#999', fontWeight:600, marginBottom:4 }}>VinpearlAI</p>
+              <div className="bubble-bot" style={{ display:'inline-flex', gap:4, alignItems:'center', padding:'12px 16px' }}>
+                <span className="thinking-dot"/><span className="thinking-dot"/><span className="thinking-dot"/>
+              </div>
+            </div>
+          )}
+
+          {pendingReplies.length > 0 && !typing && (
+            <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:12 }}>
+              {pendingReplies.map(r => (
+                <button key={r} className="quick-reply-btn" onClick={() => sendMessage(r)}>{r}</button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="chat-footer">
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <button style={{ width:34, height:34, borderRadius:'50%', background:'#f0f0f0', border:'none', cursor:'pointer', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>＋</button>
+            <input className="chat-input" value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendMessage(input)}
+              placeholder={inputDisabled ? 'Đang xử lý...' : 'Nhập tin nhắn...'}
+              disabled={inputDisabled}
+            />
+            <button onClick={() => sendMessage(input)}
+              style={{ width:34, height:34, borderRadius:'50%', background: input.trim() ? '#E3A01E' : '#e5e5e5', border:'none', cursor:'pointer', fontSize:16, color: input.trim() ? 'white' : '#aaa', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background .2s' }}>
+              ➤
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: HOME ─────────────────────────────────────────────────────────────
+function HomeScreen({ onNav, onOpenChat }) {
+  const categories = [
+    { id:'hotel', icon:'🛏', label:'Khách sạn' },
+    { id:'flight_hotel', icon:'✈', label:'Vé máy bay + Khách sạn' },
+    { id:'tour', icon:'🏖', label:'Tour & trải nghiệm' },
+    { id:'vinwonders', icon:'🎡', label:'VinWonders' },
+  ];
+
+  return (
+    <div className="screen" style={{ background:'#f5f5f5' }}>
+      <StatusBar light />
+
+      {/* Header with hero photo */}
+      <div style={{ position:'relative', paddingBottom:22, overflow:'hidden', minHeight:128 }}>
+        <img src="https://images.unsplash.com/photo-1540541338537-44a2b28e84f3?w=800&q=65"
+          onError={handleImgError}
+          style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} alt="" />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg,rgba(10,40,30,.7) 0%,rgba(10,40,30,.55) 100%)' }} />
+        <div style={{ position:'relative', padding:'2px 18px 0', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+          <div>
+            <p style={{ color:'rgba(255,255,255,.85)', fontSize:13, marginBottom:3 }}>Xin chào, {USER.name}</p>
+            <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>{USER.member_level}</span>
+              <span style={{ color:'rgba(255,255,255,.6)', fontSize:13 }}>›</span>
+              <span style={{ color:'white', fontSize:13 }}> · {USER.points}</span>
+            </div>
+          </div>
+          <button style={{ width:38, height:38, borderRadius:'50%', background:'rgba(255,255,255,.15)', border:'none', cursor:'pointer', fontSize:20, display:'flex', alignItems:'center', justifyContent:'center' }}>🔔</button>
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div style={{ background:'white', margin:'0 0 8px', padding:'16px 14px' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {categories.map(cat => (
+            <button key={cat.id} onClick={() => cat.id==='hotel' ? onNav('hotel_search') : onNav(cat.id)}
+              style={{ background:'#FFF8EE', borderRadius:16, padding:'18px 14px', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10, transition:'transform .15s' }}
+              onMouseDown={e => e.currentTarget.style.transform='scale(0.97)'}
+              onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
+              onTouchStart={e => e.currentTarget.style.transform='scale(0.97)'}
+              onTouchEnd={e => e.currentTarget.style.transform='scale(1)'}>
+              <span style={{ fontSize:32 }}>{cat.icon}</span>
+              <span style={{ fontSize:13, fontWeight:600, color:'#333', textAlign:'left', lineHeight:1.3 }}>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Ưu đãi khuyến mại */}
+      <div style={{ background:'white', marginBottom:8, padding:'14px 0 16px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'0 16px', marginBottom:12 }}>
+          <span style={{ fontSize:15, fontWeight:700, color:'#111' }}>Ưu đãi khuyến mại</span>
+        </div>
+        <div style={{ display:'flex', gap:12, overflowX:'auto', paddingLeft:16, paddingRight:16, scrollbarWidth:'none' }}>
+          {PROMOS.map(p => (
+            <div key={p.id} style={{ minWidth:220, borderRadius:14, overflow:'hidden', flexShrink:0, cursor:'pointer' }}>
+              <div style={{ position:'relative' }}>
+                <img src={p.image} onError={handleImgError} style={{ width:'100%', height:130, objectFit:'cover' }} alt="" />
+                <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg,transparent 40%,rgba(0,0,0,.5))' }} />
+              </div>
+              <div style={{ background:'#f9f9f9', padding:'10px 12px' }}>
+                <p style={{ fontSize:12, color:'#333', lineHeight:1.45, fontWeight:500 }}>{p.title}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gợi ý cho bạn */}
+      <div style={{ background:'white', marginBottom:70, padding:'14px 0 16px' }}>
+        <div style={{ padding:'0 16px', marginBottom:12 }}>
+          <span style={{ fontSize:15, fontWeight:700, color:'#111' }}>Gợi ý cho bạn</span>
+        </div>
+        <div style={{ display:'flex', gap:10, overflowX:'auto', paddingLeft:16, paddingRight:16, scrollbarWidth:'none' }}>
+          {SUGGESTIONS.map(s => (
+            <div key={s.id} style={{ minWidth:130, borderRadius:12, overflow:'hidden', flexShrink:0, cursor:'pointer', position:'relative' }}>
+              <img src={s.image} onError={handleImgError} style={{ width:'100%', height:110, objectFit:'cover' }} alt="" />
+              {s.discount && (
+                <div style={{ position:'absolute', top:8, left:8, background:'#E3A01E', color:'white', fontSize:11, fontWeight:700, padding:'2px 7px', borderRadius:6 }}>
+                  -{s.discount}%
+                </div>
+              )}
+              <div style={{ padding:'8px 8px 6px', background:'white' }}>
+                <p style={{ fontSize:12, fontWeight:600, color:'#222', lineHeight:1.3 }}>{s.name}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <BottomNav active="home" onNav={nav => nav==='hotel' ? onNav('hotel_search') : null} />
+      <button className="chat-fab" onClick={onOpenChat} title={APP_NAME} style={{ background:'#fff', padding:0, border:'2px solid #E3A01E', overflow:'hidden' }}>
+  <img src={VINPEARL_LOGO} alt={APP_NAME} style={{ width:'100%', height:'100%', objectFit:'contain', padding:6 }} />
+</button>
+    </div>
+  );
+}
+
+// ─── SCREEN: HOTEL SEARCH ─────────────────────────────────────────────────────
+function HotelSearchScreen({ onBack, onSearch, initialData }) {
+  const [dest, setDest] = useState('');
+  const [checkin, setCheckin] = useState('05 Thứ Sáu\nThg 6, 26');
+  const [checkout, setCheckout] = useState('06 Thứ Bảy\nThg 6, 26');
+  const [rooms, setRooms] = useState(1);
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(0);
+  const [babies, setBabies] = useState(0);
+  const [promoCode, setPromoCode] = useState('MEMBER');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const SUGGESTIONS_LIST = [
+    { place:'Phu Quoc', hotels:['Vinpearl Wonderworld Phú Quốc','Vinpearl Resort & Spa Phú Quốc','VinHolidays Fiesta Phú Quốc'] },
+    { place:'Nha Trang', hotels:['Vinpearl Resort & Spa Nha Trang Bay','Vinpearl Luxury Nha Trang','Vinpearl Beachfront Nha Trang','Hòn Tắm Resort','Vinpearl Empire Nha Trang, Affiliated by Meliá'] },
+    { place:'Hoi An', hotels:['Vinpearl Resort & Golf Nam Hội An'] },
+    { place:'Ha Long', hotels:['Vinpearl Resort & Spa Hạ Long'] },
+    { place:'Ha Tinh', hotels:['Vinpearl Cửa Sót Resort, Affiliated by Meliá','Vinpearl Hà Tĩnh, Affiliated by Meliá'] },
+    { place:'Nghe An', hotels:['Vinpearl Cửa Hội Resort & Villas, Affiliated by Meliá'] },
+    { place:'Bac Ninh', hotels:['Vinpearl Hotel Bắc Ninh'] },
+  ];
+
+  const handleSearch = () => {
+    const d = dest.toLowerCase();
+    const destId = d.includes('phú quốc') || d.includes('phu quoc') ? 'pq'
+      : d.includes('nha trang') ? 'nt'
+      : d.includes('hội an') || d.includes('hoi an') || d.includes('đà nẵng') || d.includes('da nang') ? 'dn'
+      : d.includes('hạ long') || d.includes('ha long') ? 'hl'
+      : d.includes('hà tĩnh') || d.includes('ha tinh') ? 'ht'
+      : d.includes('nghệ an') || d.includes('nghe an') ? 'na'
+      : d.includes('bắc ninh') || d.includes('bac ninh') ? 'bn'
+      : 'pq';
+    onSearch({ dest: destId, checkin:'05/06', checkout:'06/06', rooms, adults, children, babies });
+  };
+
+  return (
+    <div className="screen" style={{ background:'#f5f5f5' }}>
+      <StatusBar />
+      <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'10px 16px 14px', display:'flex', alignItems:'center', gap:10 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#333', padding:'0 8px 0 0' }}>←</button>
+        <span style={{ fontSize:17, fontWeight:700, color:'#111' }}>Tìm khách sạn</span>
+      </div>
+
+      <div style={{ padding:'14px 16px' }}>
+        {/* Search */}
+        <div style={{ background:'white', borderRadius:12, padding:'12px 14px', marginBottom:12, border:'1px solid #eee', display:'flex', alignItems:'center', gap:10, position:'relative' }}>
+          <span style={{ color:'#E3A01E', fontSize:18 }}>🔍</span>
+          <input
+            value={dest} onChange={e => { setDest(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder="Tìm địa điểm hoặc khách sạn"
+            style={{ flex:1, border:'none', fontSize:14, color:'#333', background:'transparent', outline:'none' }}
+          />
+        </div>
+
+        {showSuggestions && (
+          <div style={{ background:'white', borderRadius:12, marginBottom:12, overflow:'hidden', border:'1px solid #eee', boxShadow:'0 4px 12px rgba(0,0,0,.08)' }}>
+            {SUGGESTIONS_LIST.map(g => (
+              <div key={g.place}>
+                <div style={{ padding:'10px 16px 4px', display:'flex', alignItems:'center', gap:8 }}>
+                  <span style={{ fontSize:16 }}>📍</span>
+                  <span style={{ fontSize:13, fontWeight:700, color:'#111' }}>{g.place}</span>
+                </div>
+                {g.hotels.map(h => (
+                  <button key={h} onClick={() => { setDest(h); setShowSuggestions(false); }}
+                    style={{ width:'100%', padding:'8px 16px 8px 44px', border:'none', background:'none', cursor:'pointer', textAlign:'left', fontSize:13, color:'#555' }}>
+                    {h}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Dates */}
+        <div style={{ background:'white', borderRadius:12, padding:'14px', marginBottom:10, border:'1px solid #eee', display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:22, color:'#3B82F6' }}>📅</span>
+          <div style={{ flex:1 }}>
+            <span style={{ fontSize:11, color:'#999', fontWeight:600 }}>Nhận phòng</span>
+            <div style={{ display:'flex', alignItems:'baseline', gap:4 }}>
+              <span style={{ fontSize:26, fontWeight:900, color:'#E3A01E', lineHeight:1.1 }}>05</span>
+              <div>
+                <p style={{ fontSize:12, fontWeight:600, color:'#333' }}>Thứ Sáu</p>
+                <p style={{ fontSize:11, color:'#999' }}>Thg 6, 26</p>
+              </div>
+            </div>
+          </div>
+          <span style={{ color:'#ccc', fontSize:20 }}>→</span>
+          <div style={{ flex:1, textAlign:'right' }}>
+            <span style={{ fontSize:11, color:'#999', fontWeight:600 }}>Trả phòng</span>
+            <div style={{ display:'flex', alignItems:'baseline', gap:4, justifyContent:'flex-end' }}>
+              <span style={{ fontSize:26, fontWeight:900, color:'#E3A01E', lineHeight:1.1 }}>06</span>
+              <div>
+                <p style={{ fontSize:12, fontWeight:600, color:'#333' }}>Thứ Bảy</p>
+                <p style={{ fontSize:11, color:'#999' }}>Thg 6, 26</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Occupancy */}
+        <div style={{ background:'white', borderRadius:12, padding:'14px', marginBottom:10, border:'1px solid #eee', display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:22, color:'#3B82F6' }}>👤</span>
+          <div style={{ flex:1, display:'flex', gap:16 }}>
+            <div>
+              <span style={{ fontSize:14, fontWeight:900, color:'#E3A01E' }}>{rooms}</span>
+              <span style={{ fontSize:13, color:'#555', fontWeight:600 }}> Phòng</span>
+            </div>
+            <div>
+              <span style={{ fontSize:14, fontWeight:900, color:'#E3A01E' }}>{adults}</span>
+              <span style={{ fontSize:13, color:'#555', fontWeight:600 }}> Người lớn</span>
+            </div>
+          </div>
+          <div>
+            <span style={{ fontSize:13, color:'#555', fontWeight:600 }}>{children} Trẻ em</span>
+          </div>
+          <div>
+            <span style={{ fontSize:13, color:'#555', fontWeight:600 }}>{babies} Em bé</span>
+          </div>
+        </div>
+
+        {/* Promo */}
+        <div style={{ background:'white', borderRadius:12, padding:'12px 14px', marginBottom:20, border:'1px solid #eee', display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{ fontSize:18 }}>🎟</span>
+          <span style={{ fontSize:13, fontWeight:600, color:'#555', flex:1 }}>1 Mã ưu đãi</span>
+          {promoCode && <span style={{ fontSize:12, fontWeight:700, color:'#E3A01E', background:'#FFF8EE', padding:'3px 10px', borderRadius:6 }}>{promoCode}</span>}
+          {promoCode && <button onClick={() => setPromoCode('')} style={{ background:'none', border:'none', cursor:'pointer', color:'#999', fontSize:16 }}>✕</button>}
+        </div>
+
+        <button className="btn-orange" onClick={handleSearch}>Tìm kiếm</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: HOTEL LIST ───────────────────────────────────────────────────────
+function HotelListScreen({ dest = 'pq', checkin = '05/06', checkout = '06/06', rooms = 1, adults = 2, onSelect, onBack }) {
+  const hotels = HOTELS[dest] || HOTELS.pq;
+  const destLabel = { pq:'Vinpearl Wonderworld P...', nt:'Nha Trang', dn:'Hoi An' }[dest] || dest;
+
+  return (
+    <div className="screen" style={{ background:'#f2f2f2' }}>
+      <StatusBar />
+      <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'8px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#333', padding:'0 8px 0 0' }}>←</button>
+        <span style={{ fontSize:17, fontWeight:700, color:'#111' }}>Chi tiết Khách sạn</span>
+      </div>
+
+      {/* Info bar */}
+      <div className="info-bar" style={{ fontSize:11 }}>
+        <div className="info-cell"><p style={{ color:'#999', fontSize:10 }}>Điểm đến</p><p style={{ fontWeight:600, color:'#333', fontSize:11, overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>{destLabel}</p></div>
+        <div className="info-cell"><p style={{ color:'#999', fontSize:10 }}>Ngày</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>{checkin} - {checkout}/06</p></div>
+        <div className="info-cell" style={{ maxWidth:50 }}><p style={{ color:'#999', fontSize:10 }}>Phòng</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>1</p></div>
+        <div className="info-cell" style={{ maxWidth:50 }}><p style={{ color:'#999', fontSize:10 }}>Khách</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>2</p></div>
+      </div>
+
+      <div style={{ padding:'12px 14px 80px' }}>
+        {hotels.map((h, i) => (
+          <div key={h.id} className={`hotel-card slide-up slide-up-${Math.min(i+1,3)}`} onClick={() => onSelect(h)}>
+            <img src={h.image} onError={handleImgError} style={{ width:'100%', height:165, objectFit:'cover' }} alt={h.name} />
+            <div style={{ padding:'12px 14px 14px' }}>
+              <p style={{ fontSize:15, fontWeight:700, color:'#1A56DB', marginBottom:4, lineHeight:1.3 }}>{h.name}</p>
+              <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:6 }}>
+                <span style={{ fontSize:13 }}>📍</span>
+                <span style={{ fontSize:12, color:'#666' }}>{h.location}</span>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+                <TaDots rating={h.rating} />
+                <span style={{ fontSize:12, color:'#555' }}>{h.rating} ({h.reviews} đánh giá)</span>
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:12, color:'#888' }}>Giá Khách sạn</span>
+                <span style={{ fontSize:15, fontWeight:800, color:'#E3A01E' }}>{fmt(h.price)}/đêm</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Floating filter buttons */}
+      <div style={{ position:'absolute', bottom:14, left:'50%', transform:'translateX(-50%)', display:'flex', gap:10, zIndex:20 }}>
+        <button style={{ background:'white', border:'none', borderRadius:22, padding:'10px 18px', fontWeight:700, fontSize:13, color:'#333', boxShadow:'0 2px 12px rgba(0,0,0,.15)', display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
+          🗺 Bản đồ
+        </button>
+        <button style={{ background:'white', border:'none', borderRadius:22, padding:'10px 18px', fontWeight:700, fontSize:13, color:'#333', boxShadow:'0 2px 12px rgba(0,0,0,.15)', display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
+          ⚙ Bộ lọc
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: ROOM LIST ────────────────────────────────────────────────────────
+function RoomListScreen({ hotel, checkin = '05/06', checkout = '06/06', adults = 2, onSelect, onBack }) {
+  const rooms = ROOMS[hotel?.id] || ROOMS._default;
+  const label = hotel?.name?.slice(0, 22) + (hotel?.name?.length > 22 ? '...' : '');
+
+  return (
+    <div className="screen" style={{ background:'#f2f2f2' }}>
+      <StatusBar />
+      <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'8px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#333', padding:'0 8px 0 0' }}>←</button>
+        <span style={{ fontSize:17, fontWeight:700, color:'#111' }}>Danh sách phòng</span>
+      </div>
+
+      {/* Info bar */}
+      <div className="info-bar">
+        <div className="info-cell"><p style={{ color:'#999', fontSize:10 }}>Điểm đến</p><p style={{ fontWeight:600, color:'#333', fontSize:11, overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>{label}</p></div>
+        <div className="info-cell"><p style={{ color:'#999', fontSize:10 }}>Ngày</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>{checkin} - {checkout}/06</p></div>
+        <div className="info-cell" style={{ maxWidth:50 }}><p style={{ color:'#999', fontSize:10 }}>Phòng</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>1</p></div>
+        <div className="info-cell" style={{ maxWidth:50 }}><p style={{ color:'#999', fontSize:10 }}>Khách</p><p style={{ fontWeight:600, color:'#333', fontSize:11 }}>2</p></div>
+      </div>
+
+      {/* Tab */}
+      <div className="room-tab">
+        <div className="room-tab-item active">Phòng 1</div>
+      </div>
+
+      <div style={{ paddingBottom:20 }}>
+        {rooms.map((r, i) => (
+          <div key={r.id} className={`room-card slide-up slide-up-${Math.min(i+1,3)}`}>
+            <div style={{ position:'relative' }}>
+              <img src={r.image} onError={handleImgError} style={{ width:'100%', height:185, objectFit:'cover', display:'block' }} alt={r.name} />
+              <div style={{ position:'absolute', bottom:8, right:10, background:'rgba(0,0,0,.45)', color:'white', fontSize:11, padding:'2px 8px', borderRadius:6 }}>
+                🖼 1 / {r.img_count}
+              </div>
+            </div>
+            <div style={{ padding:'14px 16px 16px', background:'white' }}>
+              <p style={{ fontSize:15, fontWeight:700, color:'#1A56DB', marginBottom:4 }}>
+                {r.name} <span style={{ fontSize:14 }}>›</span>
+              </p>
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:14 }}>
+                <span style={{ fontSize:13 }}>👥</span>
+                <span style={{ fontSize:13, color:'#555' }}>{r.capacity} người lớn</span>
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <span style={{ fontSize:17, fontWeight:900, color:'#E3A01E' }}>{fmt(r.price)}<span style={{ fontSize:13, fontWeight:400, color:'#888' }}>/đêm</span></span>
+                <button className="btn-orange" style={{ width:'auto', padding:'10px 22px', fontSize:14, borderRadius:10 }} onClick={() => onSelect(r)}>
+                  Chọn phòng
+                </button>
+              </div>
+            </div>
+            {i < rooms.length - 1 && <div style={{ height:8, background:'#f2f2f2' }} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: JOURNEY SUMMARY ──────────────────────────────────────────────────
+function JourneySummaryScreen({ hotel, room, checkin = '05', checkout = '06', adults = 2, onBook, onBack }) {
+  const [holdSecs, setHoldSecs] = useState(413);
+  useEffect(() => {
+    const t = setInterval(() => setHoldSecs(s => Math.max(0, s - 1)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mm = String(Math.floor(holdSecs / 60)).padStart(2, '0');
+  const ss = String(holdSecs % 60).padStart(2, '0');
+
+  return (
+    <div className="screen" style={{ background:'#f2f2f2' }}>
+      <StatusBar />
+      <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'8px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#333', padding:'0 8px 0 0' }}>←</button>
+        <span style={{ fontSize:17, fontWeight:700, color:'#111' }}>Tổng kết hành trình</span>
+      </div>
+
+      <div style={{ padding:'14px 14px 0' }}>
+        {/* Hold timer */}
+        <div className="hold-box fade-in">
+          <span style={{ fontSize:13, fontWeight:600, color:'#555' }}>Thời gian giữ phòng</span>
+          <span style={{ fontSize:20, fontWeight:900, color:'#E3A01E' }} className={holdSecs < 60 ? 'timer-pulse' : ''}>{mm}:{ss}</span>
+        </div>
+
+        {/* Hotel info */}
+        <div style={{ background:'white', borderRadius:14, padding:'14px', marginBottom:10, boxShadow:'0 1px 6px rgba(0,0,0,.06)' }} className="slide-up">
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+            <span style={{ fontSize:20 }}>🏨</span>
+            <span style={{ fontSize:14, fontWeight:700, color:'#333' }}>Thông tin khách sạn</span>
+          </div>
+          <p style={{ fontSize:14, fontWeight:700, color:'#1A56DB', marginBottom:6 }}>{hotel?.name || 'Vinpearl Wonderworld Phú Quốc'}</p>
+          <p style={{ fontSize:13, color:'#555', marginBottom:2 }}>
+            {checkin}/06/2026 - {checkout}/06/2026 (1 đêm)
+          </p>
+          <p style={{ fontSize:13, color:'#555' }}>
+            Người lớn / Trẻ em / Em bé: {adults} / 0 / 0
+          </p>
+        </div>
+
+        {/* Room info */}
+        <div style={{ background:'white', borderRadius:14, padding:'14px', marginBottom:10, boxShadow:'0 1px 6px rgba(0,0,0,.06)' }} className="slide-up slide-up-1">
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+            <span style={{ fontSize:20 }}>🛏</span>
+            <span style={{ fontSize:14, fontWeight:700, color:'#333' }}>Thông tin phòng</span>
+          </div>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div>
+              <span style={{ fontSize:13, fontWeight:700, color:'#333' }}>Phòng 1: </span>
+              <span style={{ fontSize:13, color:'#555' }}>{room?.name || 'Biệt Thự 2 Phòng Ngủ'}</span>
+            </div>
+            <span style={{ fontSize:14, fontWeight:700, color:'#333' }}>{fmt(room?.price || 6954000)}</span>
+          </div>
+        </div>
+
+        {/* Add services */}
+        <div style={{ background:'white', borderRadius:14, padding:'14px', marginBottom:10, boxShadow:'0 1px 6px rgba(0,0,0,.06)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between' }} className="slide-up slide-up-2">
+          <div style={{ display:'flex', alignItems:'center', gap:10, flex:1 }}>
+            <div style={{ width:40, height:40, borderRadius:10, background:'#FFF8EE', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>🛍</div>
+            <div>
+              <p style={{ fontSize:14, fontWeight:700, color:'#333', marginBottom:2 }}>Mua Thêm Dịch Vụ</p>
+              <p style={{ fontSize:12, color:'#888', lineHeight:1.4 }}>Đặt Trước vé Vinwonder buffer, spa, đưa đón sân bay, và các dịch vụ khác tại Vinpearl</p>
+            </div>
+          </div>
+          <span style={{ fontSize:18, color:'#ccc', flexShrink:0, marginLeft:8 }}>›</span>
+        </div>
+
+        {/* Extra space before footer */}
+        <div style={{ height:16 }} />
+      </div>
+
+      {/* Price footer */}
+      <div className="price-footer">
+        <div>
+          <p style={{ fontSize:11, color:'#888' }}>Tổng giá (Bao gồm thuế & phí)</p>
+          <p style={{ fontSize:17, fontWeight:900, color:'#E3A01E' }}>{fmt(room?.price || 6954000)}</p>
+        </div>
+        <button className="btn-orange" style={{ width:'auto', padding:'12px 28px', fontSize:15, borderRadius:12 }} onClick={onBook}>
+          Đặt ngay
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: BOOKER INFO ──────────────────────────────────────────────────────
+function BookerInfoScreen({ hotel, room, total, autoFilled, onBack, onConfirm }) {
+  const [form, setForm] = useState({
+    title: '',
+    last_name: USER.last_name,
+    first_name: USER.first_name,
+    email: USER.email,
+    country_code: USER.country_code,
+    phone: USER.phone,
+    nationality: USER.nationality,
+    cb1: true,
+    cb2: true,
+    cb3: true,
+  });
+
+  const set = (k, v) => setForm(f => ({...f, [k]: v}));
+
+  return (
+    <div className="screen" style={{ background:'#f2f2f2' }}>
+      <StatusBar />
+      <div style={{ background:'white', borderBottom:'1px solid #eee', padding:'8px 16px 10px', display:'flex', alignItems:'center', gap:8 }}>
+        <button onClick={onBack} style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#333', padding:'0 8px 0 0' }}>←</button>
+        <span style={{ fontSize:17, fontWeight:700, color:'#111' }}>Thông tin người đặt</span>
+      </div>
+
+      {/* Step bar */}
+      <div style={{ background:'white', padding:'14px 16px', borderBottom:'1px solid #eee' }}>
+        <div className="step-bar-wrap">
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <div className="step-circle" style={{ background:'#E3A01E', color:'white' }}>1</div>
+            <span style={{ fontSize:12, fontWeight:700, color:'#E3A01E' }}>Đặt chỗ</span>
+          </div>
+          <div className="step-line" />
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <div className="step-circle" style={{ background:'#ddd', color:'#aaa' }}>2</div>
+            <span style={{ fontSize:12, color:'#aaa' }}>Xác nhận</span>
+          </div>
+          <div className="step-line" />
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <div className="step-circle" style={{ background:'#ddd', color:'#aaa' }}>3</div>
+            <span style={{ fontSize:12, color:'#aaa' }}>Thanh toán</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Auto-fill notice */}
+      {autoFilled && (
+        <div style={{ background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:10, margin:'12px 14px 4px', padding:'10px 14px', display:'flex', alignItems:'flex-start', gap:8 }} className="fade-in">
+          <img src={VINPEARL_LOGO} alt="VP" style={{ width:22, height:22, objectFit:'contain', flexShrink:0 }} />
+          <p style={{ fontSize:12.5, color:'#1D4ED8', lineHeight:1.4 }}>
+            <strong>VinpearlAI đã điền sẵn thông tin của bạn.</strong> Kiểm tra lại và điền những trường còn thiếu nhé!
+          </p>
+        </div>
+      )}
+
+      <div style={{ padding:'14px 14px 0' }}>
+        {/* Title */}
+        <div className="form-row">
+          <label className="form-label">Danh xưng <span style={{ color:'#e53e3e' }}>*</span></label>
+          <div style={{ position:'relative' }}>
+            <select className="form-select" value={form.title} onChange={e => set('title', e.target.value)}>
+              <option value=""></option>
+              <option value="mr">Ông</option>
+              <option value="ms">Bà / Cô</option>
+            </select>
+            <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', color:'#888', pointerEvents:'none', fontSize:14 }}>▾</span>
+          </div>
+        </div>
+
+        {/* Last name */}
+        <div className="form-row">
+          <label className="form-label">Họ (không dấu) <span style={{ color:'#e53e3e' }}>*</span></label>
+          <input className="form-input" value={form.last_name} onChange={e => set('last_name', e.target.value)} />
+        </div>
+
+        {/* First name */}
+        <div className="form-row">
+          <label className="form-label">Tên đệm & Tên (không dấu) <span style={{ color:'#e53e3e' }}>*</span></label>
+          <input className="form-input" value={form.first_name} onChange={e => set('first_name', e.target.value)} />
+        </div>
+
+        {/* Email */}
+        <div className="form-row">
+          <label className="form-label">Email <span style={{ color:'#e53e3e' }}>*</span></label>
+          <input className="form-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} />
+        </div>
+
+        {/* Phone */}
+        <div className="form-row">
+          <label className="form-label">Số điện thoại <span style={{ color:'#e53e3e' }}>*</span></label>
+          <div style={{ display:'flex', gap:8 }}>
+            <div style={{ position:'relative', width:100, flexShrink:0 }}>
+              <select className="form-select" value={form.country_code} onChange={e => set('country_code', e.target.value)} style={{ width:'100%' }}>
+                <option value="+84">+84</option>
+                <option value="+1">+1</option>
+                <option value="+44">+44</option>
+              </select>
+              <span style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', color:'#888', pointerEvents:'none', fontSize:13 }}>▾</span>
+            </div>
+            <input className="form-input" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="Nhập số điện thoại" style={{ flex:1 }} />
+          </div>
+        </div>
+
+        {/* Nationality */}
+        <div className="form-row">
+          <label className="form-label">Quốc tịch</label>
+          <div style={{ position:'relative' }}>
+            <select className="form-select" value={form.nationality} onChange={e => set('nationality', e.target.value)}>
+              <option value=""></option>
+              <option value="vn">Việt Nam</option>
+              <option value="us">Hoa Kỳ</option>
+              <option value="uk">Anh</option>
+              <option value="sg">Singapore</option>
+            </select>
+            <span style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', color:'#888', pointerEvents:'none', fontSize:14 }}>▾</span>
+          </div>
+        </div>
+
+        {/* Checkboxes */}
+        <div style={{ marginBottom:20 }}>
+          {[['cb1','Tôi là người lưu trú'],['cb2','Lưu thông tin vào sổ tay hành khách'],['cb3','Đồng ý nhận thông tin qua Email']].map(([k,label]) => (
+            <div key={k} className="cb-row" onClick={() => set(k, !form[k])}>
+              <div className="cb-box" style={{ background: form[k] ? '#E3A01E' : 'white', border: form[k] ? 'none' : '1.5px solid #ccc' }}>
+                {form[k] && <span style={{ color:'white', fontSize:13, fontWeight:700 }}>✓</span>}
+              </div>
+              <span style={{ fontSize:13, color:'#333', flex:1 }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ height:70 }} />
+      </div>
+
+      {/* Price footer */}
+      <div className="price-footer">
+        <div>
+          <p style={{ fontSize:11, color:'#888' }}>Tổng giá (Bao gồm thuế & phí)</p>
+          <p style={{ fontSize:17, fontWeight:900, color:'#E3A01E' }}>{fmt(total || room?.price || 6954000)}</p>
+        </div>
+        <button className="btn-orange" style={{ width:'auto', padding:'12px 28px', fontSize:15, borderRadius:12 }} onClick={onConfirm}>
+          Tiếp tục
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: BOOKING CONFIRMED ────────────────────────────────────────────────
+function BookingConfirmedScreen({ hotel, room, total, onHome }) {
+  return (
+    <div className="screen" style={{ background:'#f5f5f5', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'0 24px' }}>
+      <div style={{ textAlign:'center' }} className="fade-in">
+        <div style={{ width:80, height:80, borderRadius:'50%', background:'#D1FAE5', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', fontSize:40 }}>✓</div>
+        <h2 style={{ fontSize:22, fontWeight:900, color:'#111', marginBottom:8 }}>Đặt phòng thành công!</h2>
+        <p style={{ fontSize:14, color:'#666', marginBottom:4 }}>{hotel?.name}</p>
+        <p style={{ fontSize:14, color:'#666', marginBottom:4 }}>05/06/2026 - 06/06/2026</p>
+        <p style={{ fontSize:14, color:'#666', marginBottom:20 }}>{room?.name}</p>
+        <div style={{ background:'white', borderRadius:14, padding:'14px 20px', marginBottom:24, boxShadow:'0 1px 6px rgba(0,0,0,.08)' }}>
+          <p style={{ fontSize:13, color:'#888', marginBottom:4 }}>Tổng tiền đã thanh toán</p>
+          <p style={{ fontSize:24, fontWeight:900, color:'#E3A01E' }}>{fmt(total || 6954000)}</p>
+        </div>
+        <button className="btn-orange" onClick={onHome}>← Về trang chủ</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [screen, setScreen] = useState('home');
+  const [chatOpen, setChatOpen] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  const [searchData, setSearchData] = useState({ dest:'pq', checkin:'05', checkout:'06', rooms:1, adults:2 });
+  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+
+  const go = s => setScreen(s);
+  const reset = () => { setScreen('home'); setChatOpen(false); setSelectedHotel(null); setSelectedRoom(null); setAutoFilled(false); };
+
+  const handleChatNavigate = (action) => {
+    setChatOpen(false);
+    if (action.type === 'navigate' && action.screen === 'hotel_list') {
+      setSearchData(d => ({...d, dest: action.dest}));
+      setAutoFilled(true);
+      go('hotel_list');
+    }
+  };
+
+  const screensWithChat = ['home', 'hotel_search', 'hotel_list', 'room_list', 'journey_summary'];
+  const showFAB = screensWithChat.includes(screen) && !chatOpen;
+
+  const renderScreen = () => {
+    switch(screen) {
+      case 'home':
+        return <HomeScreen onNav={s => s==='hotel_search' ? go('hotel_search') : null} onOpenChat={() => setChatOpen(true)} />;
+
+      case 'hotel_search':
+        return <HotelSearchScreen onBack={() => go('home')} onSearch={d => { setSearchData(d); go('hotel_list'); }} />;
+
+      case 'hotel_list':
+        return <HotelListScreen
+          dest={searchData.dest} checkin={searchData.checkin} checkout={searchData.checkout}
+          rooms={searchData.rooms} adults={searchData.adults}
+          onSelect={h => { setSelectedHotel(h); go('room_list'); }}
+          onBack={() => go('hotel_search')} />;
+
+      case 'room_list':
+        return <RoomListScreen
+          hotel={selectedHotel} checkin={searchData.checkin} checkout={searchData.checkout} adults={searchData.adults}
+          onSelect={r => { setSelectedRoom(r); go('journey_summary'); }}
+          onBack={() => go('hotel_list')} />;
+
+      case 'journey_summary':
+        return <JourneySummaryScreen
+          hotel={selectedHotel} room={selectedRoom} checkin={searchData.checkin} checkout={searchData.checkout} adults={searchData.adults}
+          onBook={() => go('booker_info')}
+          onBack={() => go('room_list')} />;
+
+      case 'booker_info':
+        return <BookerInfoScreen
+          hotel={selectedHotel} room={selectedRoom}
+          total={selectedRoom?.price}
+          autoFilled={autoFilled}
+          onBack={() => go('journey_summary')}
+          onConfirm={() => go('booking_confirmed')} />;
+
+      case 'booking_confirmed':
+        return <BookingConfirmedScreen hotel={selectedHotel} room={selectedRoom} total={selectedRoom?.price} onHome={reset} />;
+
+      default:
+        return <HomeScreen onNav={s => s==='hotel_search' ? go('hotel_search') : null} onOpenChat={() => setChatOpen(true)} />;
+    }
+  };
+
+  return (
+    <>
+      {renderScreen()}
+      {chatOpen && <ChatWidget onClose={() => setChatOpen(false)} onNavigate={handleChatNavigate} />}
+      {showFAB && (
+        <button className="chat-fab" onClick={() => setChatOpen(true)} title={APP_NAME}
+          style={{ background:'#fff', padding:0, border:'2px solid #E3A01E', overflow:'hidden' }}>
+          <img src={VINPEARL_LOGO} alt={APP_NAME} style={{ width:'100%', height:'100%', objectFit:'contain', padding:6 }} />
+        </button>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
